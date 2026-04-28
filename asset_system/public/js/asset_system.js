@@ -56,7 +56,7 @@ asset_system.quick_add_asset = function () {
                             message: __("Asset {0} created.", [r.message.asset_id]),
                             indicator: "green"
                         });
-                        frappe.set_route("Form", "Asset", r.message.asset_id);
+                        frappe.set_route("Form", "BYT Asset", r.message.asset_id);
                     }
                 }
             });
@@ -78,7 +78,7 @@ asset_system.quick_move_asset = function (asset) {
                 fieldname: "asset",
                 fieldtype: "Link",
                 label: __("Asset"),
-                options: "Asset",
+                options: "BYT Asset",
                 reqd: 1,
                 default: asset || ""
             },
@@ -134,7 +134,7 @@ asset_system.quick_assign_asset = function (asset) {
                 fieldname: "asset",
                 fieldtype: "Link",
                 label: __("Asset"),
-                options: "Asset",
+                options: "BYT Asset",
                 reqd: 1,
                 default: asset || ""
             },

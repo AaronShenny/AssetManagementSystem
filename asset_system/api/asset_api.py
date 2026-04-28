@@ -21,7 +21,7 @@ from frappe.utils import today
 
 def _get_asset_or_throw(asset_name: str):
     """Fetch and return an Asset document, raising 404-style error if absent."""
-    doc = frappe.get_doc("Asset", asset_name)
+    doc = frappe.get_doc("BYT Asset", asset_name)
     if not doc:
         frappe.throw(_("Asset '{0}' not found.").format(asset_name), frappe.DoesNotExistError)
     return doc
@@ -54,7 +54,7 @@ def create_asset(
 
     doc = frappe.get_doc(
         {
-            "doctype": "Asset",
+            "doctype": "BYT Asset",
             "asset_name": asset_name,
             "category": category,
             "purchase_date": purchase_date,
@@ -102,9 +102,9 @@ def get_assets(
     if assigned_to:
         filters["assigned_to"] = assigned_to
 
-    total = frappe.db.count("Asset", filters=filters)
+    total = frappe.db.count("BYT Asset", filters=filters)
     assets = frappe.get_all(
-        "Asset",
+        "BYT Asset",
         filters=filters,
         fields=[
             "name",
@@ -282,7 +282,7 @@ def return_asset(assignment_name: str, return_date: str = None) -> dict:
     doc.save(ignore_permissions=False)
 
     # Clear assignment on the Asset
-    frappe.db.set_value("Asset", doc.asset, {
+    frappe.db.set_value("BYT Asset", doc.asset, {
         "assigned_to": None,
         "status": "Available",
     })
@@ -302,11 +302,11 @@ def get_dashboard_stats() -> dict:
     Returns:
         dict with total, available, in_use, maintenance, scrapped counts.
     """
-    total = frappe.db.count("Asset")
-    available = frappe.db.count("Asset", {"status": "Available"})
-    in_use = frappe.db.count("Asset", {"status": "In Use"})
-    maintenance = frappe.db.count("Asset", {"status": "Maintenance"})
-    scrapped = frappe.db.count("Asset", {"status": "Scrapped"})
+    total = frappe.db.count("BYT Asset")
+    available = frappe.db.count("BYT Asset", {"status": "Available"})
+    in_use = frappe.db.count("BYT Asset", {"status": "In Use"})
+    maintenance = frappe.db.count("BYT Asset", {"status": "Maintenance"})
+    scrapped = frappe.db.count("BYT Asset", {"status": "Scrapped"})
 
     return {
         "total": total,

@@ -12,7 +12,7 @@ ALLOWED_TRANSITIONS = {
 }
 
 
-class Asset(Document):
+class BYTAsset(Document):
     # ------------------------------------------------------------------ #
     # Lifecycle hooks (also wired via hooks.py for external callers)      #
     # ------------------------------------------------------------------ #
@@ -35,7 +35,7 @@ class Asset(Document):
         """Enforce allowed lifecycle transitions when status changes."""
         if self.is_new():
             return
-        old_status = frappe.db.get_value("Asset", self.name, "status")
+        old_status = frappe.db.get_value("BYT Asset", self.name, "status")
         if not old_status or old_status == self.status:
             return
         allowed = ALLOWED_TRANSITIONS.get(old_status, [])

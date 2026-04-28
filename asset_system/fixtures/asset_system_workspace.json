@@ -6,7 +6,7 @@
    "label": "Asset Status"
   }
  ],
- "content": "[{\"id\":\"assets-section\",\"type\":\"header\",\"data\":{\"text\":\"Assets\",\"col\":12}},{\"id\":\"asset-shortcuts\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"Asset\",\"col\":3}},{\"id\":\"asset-category-shortcuts\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"Asset Category\",\"col\":3}},{\"id\":\"location-shortcuts\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"Location\",\"col\":3}},{\"id\":\"movement-section\",\"type\":\"header\",\"data\":{\"text\":\"Movement & Assignment\",\"col\":12}},{\"id\":\"movement-shortcuts\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"Asset Movement\",\"col\":3}},{\"id\":\"assignment-shortcuts\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"Asset Assignment\",\"col\":3}}]",
+ "content": "[{\"id\":\"assets-section\",\"type\":\"header\",\"data\":{\"text\":\"Assets\",\"col\":12}},{\"id\":\"asset-shortcuts\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"BYT Asset\",\"col\":3}},{\"id\":\"asset-category-shortcuts\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"Asset Category\",\"col\":3}},{\"id\":\"location-shortcuts\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"Location\",\"col\":3}},{\"id\":\"movement-section\",\"type\":\"header\",\"data\":{\"text\":\"Movement & Assignment\",\"col\":12}},{\"id\":\"movement-shortcuts\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"Asset Movement\",\"col\":3}},{\"id\":\"assignment-shortcuts\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"Asset Assignment\",\"col\":3}}]",
  "creation": "2024-01-01 00:00:00.000000",
  "doctype": "Workspace",
  "hide_custom": 0,
@@ -26,8 +26,8 @@
   {
    "color": "Blue",
    "format": "{} Total",
-   "label": "Asset",
-   "link_to": "Asset",
+   "label": "BYT Asset",
+   "link_to": "BYT Asset",
    "stats_filter": "{}",
    "type": "DocType"
   },

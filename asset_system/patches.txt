@@ -1,1 +1,2 @@
 # Asset System patches
+asset_system.patches.v1_0.rename_asset_to_byt_asset

@@ -33,9 +33,9 @@ fixtures = [
 # Document Events (hooks on insert/update/etc.)
 # ------------------------------------------------------------------
 doc_events = {
-    "Asset": {
-        "before_insert": "asset_system.asset_system.doctype.asset.asset.before_insert",
-        "validate": "asset_system.asset_system.doctype.asset.asset.validate",
+    "BYT Asset": {
+        "before_insert": "asset_system.asset_system.doctype.byt_asset.byt_asset.before_insert",
+        "validate": "asset_system.asset_system.doctype.byt_asset.byt_asset.validate",
     },
     "Asset Movement": {
         "validate": "asset_system.asset_system.doctype.asset_movement.asset_movement.validate",
