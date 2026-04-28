@@ -88,7 +88,7 @@ asset_system/                          ← App root (git repo / pip package)
 
 | DocType | Autoname | Submittable | Description |
 |---------|----------|-------------|-------------|
-| **Asset** | `AST-{####}` | No | Core entity. Lifecycle: Available → In Use → Maintenance → Scrapped |
+| **BYT Asset** | `AST-{####}` | No | Core entity. Lifecycle: Available → In Use → Maintenance → Scrapped |
 | **Asset Category** | By `category_name` | No | Groups assets (Electronics, Furniture, etc.) |
 | **Location** | By `location_name` | No | Physical location (supports parent/child) |
 | **Asset Movement** | `ASTMV-{####}` | Yes | Records movement between locations |
@@ -133,6 +133,51 @@ bench --site your-site.local migrate
 # 4. Build static assets
 bench build --app asset_system
 ```
+
+### Renaming from `Asset` to `BYT Asset` (Frappe v15 + ERPNext)
+
+If your site was using an older custom DocType named `Asset`, apply this safe rename flow to avoid collision with ERPNext's built-in `Asset` DocType:
+
+```bash
+# 1) Verify the patch is present
+cat apps/asset_system/asset_system/patches.txt
+
+# 2) Run schema/data migration (executes rename patch)
+bench --site your-site.local migrate
+
+# 3) Rebuild assets and restart processes
+bench build --app asset_system
+bench restart
+```
+
+What is already handled in this app:
+
+- Rename patch: `asset_system.patches.v1_0.rename_asset_to_byt_asset`.
+- Patch guardrails: only renames `Asset` when `module == "Asset System"` (so ERPNext Asset is untouched).
+- Updated Python/controller path: `asset_system.asset_system.doctype.byt_asset.byt_asset`.
+- Updated link targets in dependent DocTypes (`Asset Movement`, `Asset Assignment`) and Workspace shortcuts/content.
+
+Recommended post-migration checks:
+
+```bash
+# DocType ownership / conflict check
+bench --site your-site.local console
+>>> frappe.db.get_value("DocType", "Asset", "module")      # should be ERPNext module (usually "Assets")
+>>> frappe.db.get_value("DocType", "BYT Asset", "module")  # should be "Asset System"
+>>> frappe.get_meta("Asset Movement").get_field("asset").options
+>>> frappe.get_meta("Asset Assignment").get_field("asset").options
+```
+
+Common edge cases and fixes:
+
+- **`DuplicateEntryError: BYT Asset already exists` during patch**  
+  Happens when someone manually renamed before migration. Keep only one DocType and re-run `bench --site ... migrate`.
+- **`ImportError` referencing `doctype.asset.asset`**  
+  Update stale imports to `doctype.byt_asset.byt_asset` and run `bench --site ... clear-cache`.
+- **Workspace shortcuts still opening old DocType**  
+  Re-export/reload fixture and run `bench --site ... migrate`, then clear cache and hard refresh.
+- **Custom scripts/server scripts still using `"Asset"`**  
+  Update them to `"BYT Asset"` manually from Desk.
 
 Or for development (editable install):
 
@@ -245,7 +290,7 @@ frappe.get_doc({"doctype": "Location", "location_name": "IT Room", "parent_locat
 
 # 3. Create assets
 laptop = frappe.get_doc({
-    "doctype": "Asset",
+    "doctype": "BYT Asset",
     "asset_name": "Dell Laptop XPS 15",
     "category": "Electronics",
     "location": "Head Office",
