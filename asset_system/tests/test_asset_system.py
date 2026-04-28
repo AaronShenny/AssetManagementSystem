@@ -20,25 +20,25 @@ class TestAssetController(unittest.TestCase):
 
     def test_allowed_transition_available_to_in_use(self):
         """Available → In Use must be permitted."""
-        from asset_system.asset_system.doctype.asset.asset import ALLOWED_TRANSITIONS
+        from asset_system.asset_system.doctype.byt_asset.byt_asset import ALLOWED_TRANSITIONS
         self.assertIn("In Use", ALLOWED_TRANSITIONS["Available"])
 
     def test_disallowed_transition_scrapped_to_available(self):
         """Scrapped state must have no allowed transitions (terminal)."""
-        from asset_system.asset_system.doctype.asset.asset import ALLOWED_TRANSITIONS
+        from asset_system.asset_system.doctype.byt_asset.byt_asset import ALLOWED_TRANSITIONS
         self.assertEqual(ALLOWED_TRANSITIONS["Scrapped"], [])
 
     def test_all_statuses_present_in_transitions(self):
-        from asset_system.asset_system.doctype.asset.asset import ALLOWED_TRANSITIONS
+        from asset_system.asset_system.doctype.byt_asset.byt_asset import ALLOWED_TRANSITIONS
         for status in ("Available", "In Use", "Maintenance", "Scrapped"):
             self.assertIn(status, ALLOWED_TRANSITIONS)
 
     def test_maintenance_can_transition_to_available(self):
-        from asset_system.asset_system.doctype.asset.asset import ALLOWED_TRANSITIONS
+        from asset_system.asset_system.doctype.byt_asset.byt_asset import ALLOWED_TRANSITIONS
         self.assertIn("Available", ALLOWED_TRANSITIONS["Maintenance"])
 
     def test_in_use_can_transition_to_scrapped(self):
-        from asset_system.asset_system.doctype.asset.asset import ALLOWED_TRANSITIONS
+        from asset_system.asset_system.doctype.byt_asset.byt_asset import ALLOWED_TRANSITIONS
         self.assertIn("Scrapped", ALLOWED_TRANSITIONS["In Use"])
 
 
