@@ -1,5 +1,5 @@
 [project]
-name = "asset-system"
+name = "asset_system"
 version = "1.0.0"
 
 dependencies = [
