@@ -1,0 +1,1 @@
+recursive-include asset_system *.json *.js *.css *.html *.txt *.png *.svg *.ico
