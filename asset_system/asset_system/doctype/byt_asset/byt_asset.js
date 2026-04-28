@@ -1,4 +1,4 @@
-frappe.ui.form.on("Asset", {
+frappe.ui.form.on("BYT Asset", {
     refresh: function (frm) {
         // Quick action buttons
         if (!frm.doc.__islocal) {

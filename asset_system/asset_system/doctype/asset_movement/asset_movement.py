@@ -17,7 +17,7 @@ class AssetMovement(Document):
     # ------------------------------------------------------------------ #
 
     def _validate_not_scrapped(self):
-        status = frappe.db.get_value("Asset", self.asset, "status")
+        status = frappe.db.get_value("BYT Asset", self.asset, "status")
         if status == "Scrapped":
             frappe.throw(
                 _("Asset {0} is Scrapped and cannot be moved.").format(self.asset)
@@ -33,8 +33,8 @@ class AssetMovement(Document):
 
     def _update_asset_location(self):
         """On submit, update the current location on the linked Asset."""
-        frappe.db.set_value("Asset", self.asset, "location", self.to_location)
-        frappe.db.set_value("Asset", self.asset, "modified", frappe.utils.now())
+        frappe.db.set_value("BYT Asset", self.asset, "location", self.to_location)
+        frappe.db.set_value("BYT Asset", self.asset, "modified", frappe.utils.now())
 
 
 # ------------------------------------------------------------------ #

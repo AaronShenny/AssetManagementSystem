@@ -25,7 +25,7 @@ class AssetAssignment(Document):
 
     def _validate_asset_available(self):
         """Prevent assigning a Scrapped asset."""
-        status = frappe.db.get_value("Asset", self.asset, "status")
+        status = frappe.db.get_value("BYT Asset", self.asset, "status")
         if status == "Scrapped":
             frappe.throw(
                 _("Asset {0} is Scrapped and cannot be assigned.").format(self.asset)
@@ -33,7 +33,7 @@ class AssetAssignment(Document):
 
     def _assign_asset(self):
         """On submit, update Asset.assigned_to and set status to In Use."""
-        frappe.db.set_value("Asset", self.asset, {
+        frappe.db.set_value("BYT Asset", self.asset, {
             "assigned_to": self.assigned_to,
             "status": "In Use",
         })
@@ -53,7 +53,7 @@ class AssetAssignment(Document):
 
     def _unassign_asset(self):
         """On cancel, clear Asset.assigned_to and set status to Available."""
-        frappe.db.set_value("Asset", self.asset, {
+        frappe.db.set_value("BYT Asset", self.asset, {
             "assigned_to": None,
             "status": "Available",
         })

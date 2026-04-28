@@ -19,7 +19,7 @@
    "fieldtype": "Link",
    "in_list_view": 1,
    "label": "Asset",
-   "options": "Asset",
+   "options": "BYT Asset",
    "reqd": 1
   },
   {
