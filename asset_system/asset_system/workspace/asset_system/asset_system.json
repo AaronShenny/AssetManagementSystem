@@ -1,28 +1,27 @@
 {
- "category": "Modules",
- "charts": [
-  {
-   "chart_name": "Asset Status",
-   "label": "Asset Status"
-  }
- ],
+ "charts": [],
  "content": "[{\"id\":\"assets-section\",\"type\":\"header\",\"data\":{\"text\":\"Assets\",\"col\":12}},{\"id\":\"asset-shortcuts\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"BYT Asset\",\"col\":3}},{\"id\":\"asset-category-shortcuts\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"Asset Category\",\"col\":3}},{\"id\":\"location-shortcuts\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"Location\",\"col\":3}},{\"id\":\"movement-section\",\"type\":\"header\",\"data\":{\"text\":\"Movement & Assignment\",\"col\":12}},{\"id\":\"movement-shortcuts\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"Asset Movement\",\"col\":3}},{\"id\":\"assignment-shortcuts\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"Asset Assignment\",\"col\":3}}]",
- "creation": "2024-01-01 00:00:00.000000",
+ "creation": "2024-01-01 00:00:00",
+ "custom_blocks": [],
+ "docstatus": 0,
  "doctype": "Workspace",
  "hide_custom": 0,
- "icon": "assets",
+ "icon": "package",
+ "idx": 0,
  "is_hidden": 0,
- "title" : "Asset System",
  "label": "Asset System",
- "modified": "2024-01-01 00:00:00.000000",
+ "links": [],
+ "modified": "2026-04-29 12:10:41.138476",
  "modified_by": "Administrator",
  "module": "Asset System",
  "name": "Asset System",
+ "number_cards": [],
  "owner": "Administrator",
  "public": 1,
+ "quick_lists": [],
  "restrict_to_domain": "",
  "roles": [],
- "sequence_id": 1,
+ "sequence_id": 1.0,
  "shortcuts": [
   {
    "color": "Blue",
@@ -55,6 +54,13 @@
    "label": "Asset Assignment",
    "link_to": "Asset Assignment",
    "type": "DocType"
+  },
+  {
+   "doc_view": "",
+   "label": "Test Doctype",
+   "link_to": "Test",
+   "type": "DocType"
   }
- ]
+ ],
+ "title": "Asset System"
 }

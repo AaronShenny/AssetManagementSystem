@@ -1,8 +1,7 @@
 {
  "actions": [],
- "allow_rename": 0,
  "autoname": "format:ASTAS-{####}",
- "creation": "2024-01-01 00:00:00.000000",
+ "creation": "2024-01-01 00:00:00",
  "doctype": "DocType",
  "engine": "InnoDB",
  "field_order": [
@@ -10,7 +9,8 @@
   "assigned_to",
   "assigned_date",
   "return_date",
-  "remarks"
+  "remarks",
+  "amended_from"
  ],
  "fields": [
   {
@@ -48,18 +48,30 @@
    "fieldname": "remarks",
    "fieldtype": "Small Text",
    "label": "Remarks"
+  },
+  {
+   "fieldname": "amended_from",
+   "fieldtype": "Link",
+   "label": "Amended From",
+   "no_copy": 1,
+   "options": "Asset Assignment",
+   "print_hide": 1,
+   "read_only": 1,
+   "search_index": 1
   }
  ],
  "icon": "fa fa-user",
  "is_submittable": 1,
- "modified": "2024-01-01 00:00:00.000000",
+ "links": [],
+ "modified": "2026-05-04 11:01:54.114673",
  "modified_by": "Administrator",
  "module": "Asset System",
  "name": "Asset Assignment",
- "naming_rule": "Expression (make_autoname)",
+ "naming_rule": "Expression (old style)",
  "owner": "Administrator",
  "permissions": [
   {
+   "cancel": 1,
    "create": 1,
    "delete": 1,
    "email": 1,
@@ -70,12 +82,11 @@
    "role": "System Manager",
    "share": 1,
    "submit": 1,
-   "cancel": 1,
    "write": 1
   },
   {
+   "cancel": 1,
    "create": 1,
-   "delete": 0,
    "email": 1,
    "export": 1,
    "print": 1,
@@ -84,7 +95,6 @@
    "role": "Asset Manager",
    "share": 1,
    "submit": 1,
-   "cancel": 1,
    "write": 1
   },
   {
@@ -97,6 +107,7 @@
    "share": 1
   }
  ],
+ "row_format": "Dynamic",
  "sort_field": "modified",
  "sort_order": "DESC",
  "states": [],

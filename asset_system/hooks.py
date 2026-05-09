@@ -37,15 +37,8 @@ doc_events = {
         "before_insert": "asset_system.asset_system.doctype.byt_asset.byt_asset.before_insert",
         "validate": "asset_system.asset_system.doctype.byt_asset.byt_asset.validate",
     },
-    "Asset Movement": {
-        "validate": "asset_system.asset_system.doctype.asset_movement.asset_movement.validate",
-        "on_submit": "asset_system.asset_system.doctype.asset_movement.asset_movement.on_submit",
-    },
-    "Asset Assignment": {
-        "validate": "asset_system.asset_system.doctype.asset_assignment.asset_assignment.validate",
-        "on_submit": "asset_system.asset_system.doctype.asset_assignment.asset_assignment.on_submit",
-        "on_cancel": "asset_system.asset_system.doctype.asset_assignment.asset_assignment.on_cancel",
-    },
+
+   
 }
 
 # ------------------------------------------------------------------

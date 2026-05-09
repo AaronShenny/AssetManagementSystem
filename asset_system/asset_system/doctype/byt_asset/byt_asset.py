@@ -53,6 +53,18 @@ class BYTAsset(Document):
         if not self.assigned_to and self.status == "In Use":
             self.status = "Available"
 
+    @frappe.whitelist()
+    def move_asset(self, new_location):
+        self.location = new_location
+        self.save()
+        return self
+
+    @frappe.whitelist()
+    def assign_asset(self, user):
+        self.assigned_to = user
+        self.save()
+        return self
+
 
 # ------------------------------------------------------------------ #
 # Module-level functions wired via hooks.py doc_events                #

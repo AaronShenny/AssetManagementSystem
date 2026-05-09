@@ -315,3 +315,105 @@ def get_dashboard_stats() -> dict:
         "maintenance": maintenance,
         "scrapped": scrapped,
     }
+
+
+@frappe.whitelist()
+def can_create_asset():
+    return frappe.has_permission("BYT Asset", "create")
+
+import frappe
+from frappe import _
+
+
+@frappe.whitelist()
+def get_Assetss(
+    category=None,
+    status=None,
+    min_price=None,
+    max_price=None,
+    location=None,
+    assigned_to=None,
+    page=1,
+    page_length=20
+):
+    # ----------------------------- #
+    # 1. Permission check
+    # ----------------------------- #
+    if not frappe.has_permission("BYT Asset", "read"):
+        frappe.throw(_("Not allowed"), frappe.PermissionError)
+
+    # ----------------------------- #
+    # 2. Build filters
+    # ----------------------------- #
+    filters = []
+
+    if category:
+        filters.append(["category", "=", category])
+
+    if status:
+        filters.append(["status", "=", status])
+
+    if location:
+        filters.append(["location", "=", location])
+
+    if assigned_to:
+        filters.append(["assigned_to", "=", assigned_to])
+
+    if min_price and max_price:
+        filters.append(["purchase_value", "between", [float(min_price), float(max_price)]])
+
+    # ----------------------------- #
+    # 3. Optional user restriction
+    # ----------------------------- #
+    if frappe.session.user != "Administrator":
+        # Example: only show assets assigned to current user
+        # remove this if not needed
+        pass
+        # filters.append(["assigned_to", "=", frappe.session.user])
+
+    # ----------------------------- #
+    # 4. Pagination setup
+    # ----------------------------- #
+    page = int(page)
+    page_length = int(page_length)
+    start = (page - 1) * page_length
+
+    # ----------------------------- #
+    # 5. Query database
+    # ----------------------------- #
+    assets = frappe.get_all(
+        "BYT Asset",
+        filters=filters,
+        fields=[
+            "name",
+            "asset_name",
+            "category",
+            "status",
+            "location",
+            "assigned_to",
+            "purchase_date",
+            "purchase_value",
+            "serial_number"
+        ],
+        limit_start=start,
+        limit_page_length=page_length,
+        order_by="creation desc"
+    )
+
+    total = frappe.db.count("BYT Asset", filters=filters)
+
+    # ----------------------------- #
+    # 6. Return response
+    # ----------------------------- #
+    return {
+        "total": total,
+        "page": page,
+        "page_length": page_length,
+        "assets": assets
+    }
+
+@frappe.whitelist()
+def who_am_i():
+    return {
+        "user": frappe.session.user
+    }
