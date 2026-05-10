@@ -13,8 +13,8 @@ A **fully independent** Asset Management System built as a custom Frappe Framewo
 │  │                    asset_system (App)                       │ │
 │  │                                                             │ │
 │  │  ┌──────────────┐  ┌──────────────┐  ┌──────────────────┐  │ │
-│  │  │  Asset       │  │Asset Category│  │    Location      │  │ │
-│  │  │  (AST-####)  │→ │              │  │  (Tree)          │  │ │
+│  │  │  BYT Asset   │  │Asset Category│  │    Location      │  │ │
+│  │  │ (BYT-ASSET-#)│→ │              │  │  (Tree)          │  │ │
 │  │  └──────┬───────┘  └──────────────┘  └──────────────────┘  │ │
 │  │         │                                                    │ │
 │  │   ┌─────┴────────────────────────────────┐                  │ │
@@ -26,7 +26,7 @@ A **fully independent** Asset Management System built as a custom Frappe Framewo
 │  │  └──────────────────┘  └──────────────────────────────────┘ │ │
 │  │                                                             │ │
 │  │  ┌─────────────────────────────────────────────────────┐   │ │
-│  │  │  Whitelisted API  (asset_system/api/asset_api.py)   │   │ │
+│  │  │  Whitelisted API  (asset_system/api/api.py)         │   │ │
 │  │  │  create_asset · get_assets · move_asset             │   │ │
 │  │  │  assign_asset · get_asset_history · return_asset    │   │ │
 │  │  │  get_dashboard_stats                                │   │ │
@@ -52,7 +52,7 @@ asset_system/                          ← App root (git repo / pip package)
     │
     ├── api/                           ← Whitelisted REST API
     │   ├── __init__.py
-    │   └── asset_api.py
+    │   └── api.py
     │
     ├── public/                        ← Static assets (CSS/JS)
     │   ├── css/asset_system.css
@@ -72,14 +72,15 @@ asset_system/                          ← App root (git repo / pip package)
     └── asset_system/                  ← Module folder (module = "Asset System")
         ├── __init__.py
         └── doctype/
-            ├── asset/
-            │   ├── asset.json         ← DocType schema
-            │   ├── asset.py           ← Server-side controller
-            │   └── asset.js           ← Client-side controller
+            ├── byt_asset/
+            │   ├── byt_asset.json     ← DocType schema
+            │   ├── byt_asset.py       ← Server-side controller
+            │   └── byt_asset.js       ← Client-side controller
             ├── asset_category/
             ├── location/
             ├── asset_movement/
-            └── asset_assignment/
+            ├── asset_assignment/
+            └── byt_asset_maintenance/
 ```
 
 ---
@@ -88,11 +89,12 @@ asset_system/                          ← App root (git repo / pip package)
 
 | DocType | Autoname | Submittable | Description |
 |---------|----------|-------------|-------------|
-| **BYT Asset** | `AST-{####}` | No | Core entity. Lifecycle: Available → In Use → Maintenance → Scrapped |
+| **BYT Asset** | `BYT-ASSET-.#####.` | No | Core entity. Lifecycle: Available → In Use → Maintenance → Scrapped |
 | **Asset Category** | By `category_name` | No | Groups assets (Electronics, Furniture, etc.) |
 | **Location** | By `location_name` | No | Physical location (supports parent/child) |
 | **Asset Movement** | `ASTMV-{####}` | Yes | Records movement between locations |
 | **Asset Assignment** | `ASTAS-{####}` | Yes | Records assignment to a user |
+| **BYT Asset Maintenance** | Child table | No | Child table reserved for maintenance-related rows |
 
 ### Asset Status Lifecycle
 
@@ -189,7 +191,7 @@ pip install -e /path/to/asset_system/
 
 ## Whitelisted API
 
-All endpoints are accessible at `/api/method/asset_system.api.asset_api.<method_name>`.
+All endpoints are accessible at `/api/method/asset_system.api.api.<method_name>`.
 
 ### `create_asset`
 
@@ -197,7 +199,7 @@ All endpoints are accessible at `/api/method/asset_system.api.asset_api.<method_
 import requests
 
 response = requests.post(
-    "https://your-site/api/method/asset_system.api.asset_api.create_asset",
+    "https://your-site/api/method/asset_system.api.api.create_asset",
     data={
         "asset_name": "Dell Laptop",
         "category": "Electronics",
@@ -208,14 +210,14 @@ response = requests.post(
     },
     headers={"Authorization": "token api_key:api_secret"},
 )
-# Response: {"message": {"asset_id": "AST-0001", "status": "Available", ...}}
+# Response: {"message": {"asset_id": "BYT-ASSET-00001", "status": "Available", ...}}
 ```
 
 ### `get_assets`
 
 ```python
 response = requests.get(
-    "https://your-site/api/method/asset_system.api.asset_api.get_assets",
+    "https://your-site/api/method/asset_system.api.api.get_assets",
     params={"status": "Available", "page": 1, "page_length": 10},
     headers={"Authorization": "token api_key:api_secret"},
 )
@@ -226,9 +228,9 @@ response = requests.get(
 
 ```python
 response = requests.post(
-    "https://your-site/api/method/asset_system.api.asset_api.move_asset",
+    "https://your-site/api/method/asset_system.api.api.move_asset",
     data={
-        "asset": "AST-0001",
+        "asset": "BYT-ASSET-00001",
         "to_location": "Branch Office",
         "remarks": "Relocated for project",
     },
@@ -240,9 +242,9 @@ response = requests.post(
 
 ```python
 response = requests.post(
-    "https://your-site/api/method/asset_system.api.asset_api.assign_asset",
+    "https://your-site/api/method/asset_system.api.api.assign_asset",
     data={
-        "asset": "AST-0001",
+        "asset": "BYT-ASSET-00001",
         "assigned_to": "john@example.com",
         "assigned_date": "2024-02-01",
     },
@@ -254,18 +256,18 @@ response = requests.post(
 
 ```python
 response = requests.get(
-    "https://your-site/api/method/asset_system.api.asset_api.get_asset_history",
-    params={"asset": "AST-0001"},
+    "https://your-site/api/method/asset_system.api.api.get_asset_history",
+    params={"asset": "BYT-ASSET-00001"},
     headers={"Authorization": "token api_key:api_secret"},
 )
-# Response: {"message": {"asset": "AST-0001", "movements": [...], "assignments": [...]}}
+# Response: {"message": {"asset": "BYT-ASSET-00001", "movements": [...], "assignments": [...]}}
 ```
 
 ### `get_dashboard_stats`
 
 ```python
 response = requests.get(
-    "https://your-site/api/method/asset_system.api.asset_api.get_dashboard_stats",
+    "https://your-site/api/method/asset_system.api.api.get_dashboard_stats",
     headers={"Authorization": "token api_key:api_secret"},
 )
 # Response: {"message": {"total": 50, "available": 20, "in_use": 25, "maintenance": 3, "scrapped": 2}}
