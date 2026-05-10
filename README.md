@@ -89,12 +89,12 @@ asset_system/                          ← App root (git repo / pip package)
 
 | DocType | Autoname | Submittable | Description |
 |---------|----------|-------------|-------------|
-| **BYT Asset** | `BYT-ASSET-.#####.` | No | Core entity. Lifecycle: Available → In Use → Maintenance → Scrapped |
+| **BYT Asset** | `BYT-ASSET-#####` | No | Core entity. Lifecycle: Available → In Use → Maintenance → Scrapped |
 | **Asset Category** | By `category_name` | No | Groups assets (Electronics, Furniture, etc.) |
 | **Location** | By `location_name` | No | Physical location (supports parent/child) |
 | **Asset Movement** | `ASTMV-{####}` | Yes | Records movement between locations |
 | **Asset Assignment** | `ASTAS-{####}` | Yes | Records assignment to a user |
-| **BYT Asset Maintenance** | Child table | No | Child table reserved for maintenance-related rows |
+| **BYT Asset Maintenance** | Child table | No | Stores maintenance line-items linked to asset maintenance workflows |
 
 ### Asset Status Lifecycle
 
