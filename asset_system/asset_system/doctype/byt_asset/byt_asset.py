@@ -16,7 +16,66 @@ class BYTAsset(Document):
     # ------------------------------------------------------------------ #
     # Lifecycle hooks (also wired via hooks.py for external callers)      #
     # ------------------------------------------------------------------ #
+    def after_insert(self):
+        self.create_user_permission()
 
+    def on_update(self):
+        self.create_user_permission()
+    
+    def create_user_permission(self):
+
+        if not self.assigned_to:
+
+            existing_asset_permission = frappe.db.exists(
+                "User Permission",
+                {
+                    "allow": "BYT Asset",
+                    "for_value": self.name
+                }
+            )
+
+            if existing_asset_permission:
+                frappe.delete_doc(
+                    "User Permission",
+                    existing_asset_permission,
+                    ignore_permissions=True
+                )
+
+            return
+
+        # Get linked user
+        user = frappe.db.get_value(
+            "User",
+            self.assigned_to,
+            "name"
+        )
+
+        if not user:
+            return
+
+        # Avoid duplicate permissions
+        exists = frappe.db.exists(
+            "User Permission",
+            {
+                "user": user,
+                "allow": "BYT Asset",
+                "for_value": self.name
+            }
+        )
+
+        if exists:
+            return
+
+        # Create permission
+        perm = frappe.get_doc({
+            "doctype": "User Permission",
+            "user": user,
+            "allow": "BYT Asset",
+            "for_value": self.name,
+            "apply_to_all_doctypes": 1
+        })
+
+        perm.insert(ignore_permissions=True)
     def before_insert(self):
         """Set the asset_id field from the autoname value before saving."""
         # `name` is set by autoname at this point; mirror it to asset_id
@@ -70,7 +129,21 @@ class BYTAsset(Document):
 # Module-level functions wired via hooks.py doc_events                #
 # ------------------------------------------------------------------ #
 
+def get_permission_query_conditions(user):
 
+    if not user:
+        user = frappe.session.user
+
+    if "System Manager" in frappe.get_roles(user):
+        return ""
+
+    if "Asset Manager" in frappe.get_roles(user):
+        return ""
+
+    if "Asset Employee" in frappe.get_roles(user):
+        return f"`tabBYT Asset`.assigned_to = {frappe.db.escape(user)}"
+
+    return "1=0"
 def before_insert(doc, method=None):
     doc.before_insert()
 

@@ -1,8 +1,7 @@
 {
  "actions": [],
- "allow_rename": 0,
  "autoname": "format:ASTMV-{####}",
- "creation": "2024-01-01 00:00:00.000000",
+ "creation": "2024-01-01 00:00:00",
  "doctype": "DocType",
  "engine": "InnoDB",
  "field_order": [
@@ -13,7 +12,8 @@
   "to_location",
   "column_break_location",
   "moved_by",
-  "remarks"
+  "remarks",
+  "amended_from"
  ],
  "fields": [
   {
@@ -31,7 +31,7 @@
    "fieldtype": "Date",
    "in_list_view": 1,
    "label": "Movement Date",
-   "reqd": 1
+   "permlevel": 2
   },
   {
    "fieldname": "section_break_location",
@@ -68,18 +68,30 @@
    "fieldname": "remarks",
    "fieldtype": "Small Text",
    "label": "Remarks"
+  },
+  {
+   "fieldname": "amended_from",
+   "fieldtype": "Link",
+   "label": "Amended From",
+   "no_copy": 1,
+   "options": "Asset Movement",
+   "print_hide": 1,
+   "read_only": 1,
+   "search_index": 1
   }
  ],
  "icon": "fa fa-truck",
  "is_submittable": 1,
- "modified": "2024-01-01 00:00:00.000000",
+ "links": [],
+ "modified": "2026-05-14 22:12:01.022901",
  "modified_by": "Administrator",
  "module": "Asset System",
  "name": "Asset Movement",
- "naming_rule": "Expression (make_autoname)",
+ "naming_rule": "Expression (old style)",
  "owner": "Administrator",
  "permissions": [
   {
+   "cancel": 1,
    "create": 1,
    "delete": 1,
    "email": 1,
@@ -90,12 +102,11 @@
    "role": "System Manager",
    "share": 1,
    "submit": 1,
-   "cancel": 1,
    "write": 1
   },
   {
+   "cancel": 1,
    "create": 1,
-   "delete": 0,
    "email": 1,
    "export": 1,
    "print": 1,
@@ -104,7 +115,6 @@
    "role": "Asset Manager",
    "share": 1,
    "submit": 1,
-   "cancel": 1,
    "write": 1
   },
   {
@@ -115,8 +125,21 @@
    "report": 1,
    "role": "Asset Employee",
    "share": 1
+  },
+  {
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "permlevel": 2,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
   }
  ],
+ "row_format": "Dynamic",
  "sort_field": "modified",
  "sort_order": "DESC",
  "states": [],

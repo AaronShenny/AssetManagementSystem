@@ -2,13 +2,12 @@
  "actions": [],
  "allow_rename": 1,
  "autoname": "field:category_name",
- "creation": "2024-01-01 00:00:00.000000",
+ "creation": "2024-01-01 00:00:00",
  "doctype": "DocType",
  "engine": "InnoDB",
  "field_order": [
   "category_name",
-  "depreciation_applicable",
-  "expected_life"
+  "abbreviation"
  ],
  "fields": [
   {
@@ -20,19 +19,13 @@
    "unique": 1
   },
   {
-   "default": "0",
-   "fieldname": "depreciation_applicable",
-   "fieldtype": "Check",
-   "in_list_view": 1,
-   "label": "Depreciation Applicable"
-  },
-  {
-   "fieldname": "expected_life",
-   "fieldtype": "Int",
-   "label": "Expected Life (Years)"
+   "fieldname": "abbreviation",
+   "fieldtype": "Data",
+   "label": "Abbreviation"
   }
  ],
- "modified": "2024-01-01 00:00:00.000000",
+ "links": [],
+ "modified": "2026-05-11 18:02:37.823840",
  "modified_by": "Administrator",
  "module": "Asset System",
  "name": "Asset Category",
@@ -73,6 +66,7 @@
    "share": 1
   }
  ],
+ "row_format": "Dynamic",
  "sort_field": "modified",
  "sort_order": "DESC",
  "states": [],

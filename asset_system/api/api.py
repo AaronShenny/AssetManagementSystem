@@ -263,7 +263,24 @@ def get_asset_history(asset: str) -> dict:
         "assignments": assignments,
     }
 
-
+"""
+assignments = frappe.get_all(
+    "Asset Assignment",
+    filters={
+        "asset": asset,
+        "return_date": ["is", "not set"]
+    },
+    fields=[
+        "name",
+        "assigned_to",
+        "assigned_date",
+        "return_date",
+        "remarks",
+        "docstatus",
+    ],
+    order_by="assigned_date desc",
+)
+"""
 @frappe.whitelist()
 def return_asset(assignment_name: str, return_date: str = None) -> dict:
     """Record the return date on a submitted Asset Assignment.
@@ -324,6 +341,8 @@ def can_create_asset():
 import frappe
 from frappe import _
 
+def can_create_assignment():
+    return frappe.has_permission("Asset Assignment","create")
 
 @frappe.whitelist()
 def get_Assetss(
@@ -417,3 +436,123 @@ def who_am_i():
     return {
         "user": frappe.session.user
     }
+
+
+
+@frappe.whitelist()
+def get_user_roles():
+    user = frappe.session.user
+
+    roles = frappe.get_roles(user)
+    print(roles)
+    if user == 'Administrator':
+        roles = ['Admin']
+    return {
+        "user": user,
+        "roles": roles
+    }
+
+
+
+@frappe.whitelist()
+def get_asset_details(asset):
+    """
+    Return all readable fields of an Asset
+    for the currently logged-in user.
+    """
+
+    doctype = "BYT Asset"
+
+    # Check permission
+    if not frappe.has_permission(doctype, "read", doc=asset):
+        frappe.throw("Not permitted", frappe.PermissionError)
+
+    # Get document
+    doc = frappe.get_doc(doctype, asset)
+    print(doc)
+    meta = frappe.get_meta(doctype)
+
+    fields_data = []
+
+    # Add default fields you may want
+    #default_fields = [
+    #    "name",
+    #    "owner",
+    #    "creation",
+    #    "modified",
+    #    "modified_by",
+    #    "docstatus",
+    #]
+
+    for field in meta.fields:
+
+        # Skip hidden fields
+        if field.hidden:
+            continue
+
+        value = doc.get(field.fieldname)
+
+        fields_data.append({
+            "fieldname": field.fieldname,
+            "label": field.label,
+            "fieldtype": field.fieldtype,
+            "value": value,
+            "options": field.options,
+            "reqd": field.reqd,
+            "read_only": field.read_only,
+        })
+
+    # Add default fields manually
+    #for fieldname in default_fields:
+    #    fields_data.append({
+    #        "fieldname": fieldname,
+    #        "label": fieldname.replace("_", " ").title(),
+    #        "fieldtype": "Data",
+    #        "value": doc.get(fieldname),
+    #        "options": None,
+    #        "reqd": 0,
+    #        "read_only": 1,
+    #    })
+    print(fields_data)
+    return {
+        "doctype": doctype,
+        "asset": asset,
+        "fields": fields_data
+    }
+
+@frappe.whitelist()
+def get_doctype_meta(doctype: str):
+    if not doctype:
+        frappe.throw(_('doctype is required'))
+
+    meta = frappe.get_meta(doctype)
+
+    fields = []
+    for field in meta.fields:
+        fields.append(
+            {
+                "fieldname": field.fieldname,
+                "label": field.label,
+                "fieldtype": field.fieldtype,
+                "hidden": field.hidden,
+                "read_only": field.read_only,
+                "reqd": field.reqd,
+                "options": field.options,
+                "in_list_view": field.in_list_view,
+                "default": field.default,
+            }
+        )
+
+    return {"fields": fields}
+
+@frappe.whitelist()
+def search_link_options(doctype, txt=""):
+
+    return frappe.get_all(
+        doctype,
+        filters={
+            "name": ["like", f"%{txt}%"]
+        },
+        fields=["name"],
+        limit=20
+    )

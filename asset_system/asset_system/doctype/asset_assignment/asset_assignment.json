@@ -10,7 +10,8 @@
   "assigned_date",
   "return_date",
   "remarks",
-  "amended_from"
+  "amended_from",
+  "proof_file"
  ],
  "fields": [
   {
@@ -58,12 +59,16 @@
    "print_hide": 1,
    "read_only": 1,
    "search_index": 1
+  },
+  {
+   "fieldname": "proof_file",
+   "fieldtype": "Attach",
+   "label": "Proof"
   }
  ],
  "icon": "fa fa-user",
- "is_submittable": 1,
  "links": [],
- "modified": "2026-05-04 11:01:54.114673",
+ "modified": "2026-05-15 10:43:27.481713",
  "modified_by": "Administrator",
  "module": "Asset System",
  "name": "Asset Assignment",
@@ -71,7 +76,6 @@
  "owner": "Administrator",
  "permissions": [
   {
-   "cancel": 1,
    "create": 1,
    "delete": 1,
    "email": 1,
@@ -81,11 +85,9 @@
    "report": 1,
    "role": "System Manager",
    "share": 1,
-   "submit": 1,
    "write": 1
   },
   {
-   "cancel": 1,
    "create": 1,
    "email": 1,
    "export": 1,
@@ -94,7 +96,6 @@
    "report": 1,
    "role": "Asset Manager",
    "share": 1,
-   "submit": 1,
    "write": 1
   },
   {
