@@ -68,7 +68,7 @@
    "in_list_view": 1,
    "in_standard_filter": 1,
    "label": "Status",
-   "options": "Available\nIn Use\nMaintenance\nScrapped",
+   "options": "Available\nIn Use\nAssigned\nMaintenance\nScrapped",
    "reqd": 1
   },
   {
@@ -151,7 +151,7 @@
  ],
  "icon": "fa fa-desktop",
  "links": [],
- "modified": "2026-05-15 16:01:54.110907",
+ "modified": "2026-05-19 11:45:40.927772",
  "modified_by": "Administrator",
  "module": "Asset System",
  "name": "BYT Asset",
@@ -260,6 +260,10 @@
   {
    "color": "Red",
    "title": "Scrapped"
+  },
+  {
+   "color": "Blue",
+   "title": "Assigned"
   }
  ],
  "title_field": "asset_id",

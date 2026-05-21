@@ -10,6 +10,8 @@ class AssetAssignment(Document):
 
     def after_insert(self):
         self._assign_asset()
+    def on_update(self):
+        self._assign_asset()
 
     def on_trash(self):
         self._unassign_asset()
@@ -30,7 +32,7 @@ class AssetAssignment(Document):
             frappe.throw(
                 _("Asset {0} is Scrapped and cannot be assigned.").format(self.asset)
             )
-        if status == "In Use":
+        if status == "In Use" or status == "Assigned":
             frappe.throw(
                 _("Asset {0} is in use and cannot be assigned. Unassign first").format(self.asset)
             )
@@ -39,8 +41,13 @@ class AssetAssignment(Document):
         """On submit, update Asset.assigned_to and set status to In Use."""
         asset_doc = frappe.get_doc("BYT Asset", self.asset)
 
-        asset_doc.assigned_to = self.assigned_to
-        asset_doc.status = "In Use"
+        
+        if self.status in ['Off Board','Replacement','Damage','Other Reason']:
+            asset_doc.assigned_to = None
+            asset_doc.status = "Available"
+        else:
+            asset_doc.assigned_to = self.assigned_to
+            asset_doc.status = self.status
 
         asset_doc.save(ignore_permissions=True)
         #frappe.db.set_value("BYT Asset", self.asset, {

@@ -5,10 +5,12 @@ from frappe.utils import now_datetime
 
 # Status transition rules
 ALLOWED_TRANSITIONS = {
-    "Available": ["In Use", "Maintenance", "Scrapped"],
+    "Available": ["In Use","Assigned", "Maintenance", "Scrapped"],
     "In Use": ["Available", "Maintenance", "Scrapped"],
-    "Maintenance": ["Available", "In Use", "Scrapped"],
+    "Assigned": ["Available", "Maintenance", "Scrapped"],
+    "Maintenance": ["Available", "In Use","Assigned", "Scrapped"],
     "Scrapped": [],  # terminal state
+    
 }
 
 
@@ -108,8 +110,8 @@ class BYTAsset(Document):
     def _validate_assigned_to(self):
         """Keep status consistent with assigned_to field."""
         if self.assigned_to and self.status == "Available":
-            self.status = "In Use"
-        if not self.assigned_to and self.status == "In Use":
+            self.status = "Assigned"
+        if not self.assigned_to and self.status == "Assigned":
             self.status = "Available"
 
     @frappe.whitelist()
@@ -128,6 +130,30 @@ class BYTAsset(Document):
 # ------------------------------------------------------------------ #
 # Module-level functions wired via hooks.py doc_events                #
 # ------------------------------------------------------------------ #
+def has_permission(doc, user=None, permission_type=None):
+    user = user or frappe.session.user
+
+    # Allow System Manager
+    if "System Manager" in frappe.get_roles(user):
+        return True
+
+    # Allow Asset Manager
+    if "Asset Manager" in frappe.get_roles(user):
+        return True
+
+    # Allow assigned Asset Employee
+    if "Asset Employee" in frappe.get_roles(user):
+
+        assigned = frappe.db.exists(
+            "Asset Assignment",
+            {
+                "asset": doc.name,
+                "assigned_to": user
+                #"status": "Active"
+            }
+        )
+
+        return bool(assigned)
 
 def get_permission_query_conditions(user):
 

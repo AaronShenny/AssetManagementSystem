@@ -9,6 +9,7 @@
   "assigned_to",
   "assigned_date",
   "return_date",
+  "status",
   "remarks",
   "amended_from",
   "proof_file"
@@ -64,11 +65,18 @@
    "fieldname": "proof_file",
    "fieldtype": "Attach",
    "label": "Proof"
+  },
+  {
+   "default": "Assigned",
+   "fieldname": "status",
+   "fieldtype": "Select",
+   "label": "Status",
+   "options": "Assigned\nReturned\nReplacement\nOff Board"
   }
  ],
  "icon": "fa fa-user",
  "links": [],
- "modified": "2026-05-15 10:43:27.481713",
+ "modified": "2026-05-19 11:01:49.502305",
  "modified_by": "Administrator",
  "module": "Asset System",
  "name": "Asset Assignment",
@@ -111,7 +119,20 @@
  "row_format": "Dynamic",
  "sort_field": "modified",
  "sort_order": "DESC",
- "states": [],
+ "states": [
+  {
+   "color": "Green",
+   "title": "Assigned"
+  },
+  {
+   "color": "Gray",
+   "title": "Returned"
+  },
+  {
+   "color": "Blue",
+   "title": "Replacement"
+  }
+ ],
  "title_field": "asset",
  "track_changes": 1
 }

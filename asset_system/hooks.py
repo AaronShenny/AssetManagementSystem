@@ -43,6 +43,9 @@ doc_events = {
 permission_query_conditions = {
     "BYT Asset": "asset_system.asset_system.doctype.byt_asset.byt_asset.get_permission_query_conditions"
 }
+has_permission = {
+    "BYT Asset": "asset_system.asset_system.doctype.byt_asset.byt_asset.has_permission"
+}
 # ------------------------------------------------------------------
 # Scheduled tasks
 # ------------------------------------------------------------------

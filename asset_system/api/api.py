@@ -218,49 +218,75 @@ def assign_asset(
 
 @frappe.whitelist()
 def get_asset_history(asset: str) -> dict:
-    """Return full movement and assignment history for an asset.
+    """Return full lifecycle history of an asset."""
 
-    Returns:
-        dict: ``{"asset": "AST-0001", "movements": [...], "assignments": [...]}``
-    """
     if not asset:
-        frappe.throw(_("asset is required."))
+        frappe.throw(_("Asset is required."))
 
-    _get_asset_or_throw(asset)  # validate existence
+    _get_asset_or_throw(asset)
 
-    movements = frappe.get_all(
-        "Asset Movement",
-        filters={"asset": asset},
-        fields=[
-            "name",
-            "from_location",
-            "to_location",
-            "movement_date",
-            "moved_by",
-            "remarks",
-            "docstatus",
-        ],
-        order_by="movement_date desc",
-    )
+    history = []
 
+    # GET ALL ASSIGNMENTS
     assignments = frappe.get_all(
         "Asset Assignment",
-        filters={"asset": asset},
+        filters={
+            "asset": asset
+        },
         fields=[
             "name",
+            "asset",
             "assigned_to",
             "assigned_date",
-            "return_date",
             "remarks",
             "docstatus",
+            "creation",
         ],
-        order_by="assigned_date desc",
+        order_by="creation asc",
     )
+
+    for assignment in assignments:
+
+        # FIND RETURN FOR THIS ASSIGNMENT
+        return_doc = frappe.db.get_value(
+            "Asset Return",
+            {
+                "asset_assignment": assignment.name
+            },
+            [
+                "name",
+                "returned_date",
+                "return_reason",
+                "remarks",
+                "docstatus",
+                "creation",
+            ],
+            as_dict=True
+        )
+
+        history.append({
+            "assignment": {
+                "id": assignment.name,
+                "employee": assignment.assigned_to,
+                "assigned_date": assignment.assigned_date,
+                "remarks": assignment.remarks,
+                "docstatus": assignment.docstatus,
+                "creation": assignment.creation,
+            },
+
+            "return": {
+                "id": return_doc.name,
+                "returned_date": return_doc.returned_date,
+                "reason": return_doc.return_reason,
+                "remarks": return_doc.remarks,
+                "docstatus": return_doc.docstatus,
+                "creation": return_doc.creation,
+            } if return_doc else None
+        })
 
     return {
         "asset": asset,
-        "movements": movements,
-        "assignments": assignments,
+        "history": history,
     }
 
 """
