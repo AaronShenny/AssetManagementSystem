@@ -1,352 +1,129 @@
 # Asset Management System
 
-A **fully independent** Asset Management System built as a custom Frappe Framework app (`asset_system`). Does **not** depend on ERPNext, Item, or Accounting modules.
+Custom Frappe app (`asset_system`) for tracking asset lifecycle, movement, assignment, return, and basic dashboard/API operations.
 
----
+## Current codebase snapshot
 
-## Architecture Diagram
+- App/package version: `1.0.0`
+- Python package root: `asset_system/`
+- API module: `asset_system/api/api.py`
+- Workspace fixture: `asset_system/fixtures/asset_system_workspace.json`
+- Patches:
+  - `asset_system.patches.v1_0.rename_asset_to_byt_asset`
+  - `asset_system.patches.v1_1.ensure_byt_asset_references`
 
-```
-┌──────────────────────────────────────────────────────────────────┐
-│                        Frappe Framework                          │
-│  ┌─────────────────────────────────────────────────────────────┐ │
-│  │                    asset_system (App)                       │ │
-│  │                                                             │ │
-│  │  ┌──────────────┐  ┌──────────────┐  ┌──────────────────┐  │ │
-│  │  │  Asset       │  │Asset Category│  │    Location      │  │ │
-│  │  │  (AST-####)  │→ │              │  │  (Tree)          │  │ │
-│  │  └──────┬───────┘  └──────────────┘  └──────────────────┘  │ │
-│  │         │                                                    │ │
-│  │   ┌─────┴────────────────────────────────┐                  │ │
-│  │   │                                      │                  │ │
-│  │   ▼                                      ▼                  │ │
-│  │  ┌──────────────────┐  ┌──────────────────────────────────┐ │ │
-│  │  │  Asset Movement  │  │      Asset Assignment            │ │ │
-│  │  │  (ASTMV-####)    │  │      (ASTAS-####)                │ │ │
-│  │  └──────────────────┘  └──────────────────────────────────┘ │ │
-│  │                                                             │ │
-│  │  ┌─────────────────────────────────────────────────────┐   │ │
-│  │  │  Whitelisted API  (asset_system/api/asset_api.py)   │   │ │
-│  │  │  create_asset · get_assets · move_asset             │   │ │
-│  │  │  assign_asset · get_asset_history · return_asset    │   │ │
-│  │  │  get_dashboard_stats                                │   │ │
-│  │  └─────────────────────────────────────────────────────┘   │ │
-│  └─────────────────────────────────────────────────────────────┘ │
-└──────────────────────────────────────────────────────────────────┘
-```
+## Main modules and DocTypes
 
----
+| DocType | Autoname | Submittable | Notes |
+|---|---|---|---|
+| `BYT Asset` | `BYT.{location_abbreviation}..{category_abbreviation}..#####.` | No | Core asset record |
+| `Asset Category` | `field:category_name` | No | Asset grouping + abbreviation |
+| `Location` | `field:location_name` | No | Asset location + parent relationship |
+| `Asset Movement` | `ASTMV-{####}` | Yes | Location transfer records |
+| `Asset Assignment` | `ASTAS-{####}` | No | User assignment records |
+| `Asset Return` | system naming | Yes | Return workflow linked to assignment |
+| `Damages` | system naming | Yes | Damage assessment record |
+| `BYT Asset Maintenance` | child table (`istable=1`) | No | Child table doctype scaffold |
 
-## Folder Structure
+## Asset lifecycle rules implemented
 
-```
-asset_system/                          ← App root (git repo / pip package)
-├── setup.py
-├── requirements.txt
-├── MANIFEST.in
-└── asset_system/                      ← Python package  (import asset_system)
-    ├── __init__.py                    ← __version__ = "1.0.0"
-    ├── hooks.py                       ← Frappe hooks (doc_events, fixtures, etc.)
-    ├── modules.txt                    ← "Asset System"
-    ├── patches.txt
-    │
-    ├── api/                           ← Whitelisted REST API
-    │   ├── __init__.py
-    │   └── asset_api.py
-    │
-    ├── public/                        ← Static assets (CSS/JS)
-    │   ├── css/asset_system.css
-    │   └── js/asset_system.js
-    │
-    ├── templates/                     ← Jinja2 web templates
-    │   └── pages/
-    │       └── asset_dashboard.html
-    │
-    ├── fixtures/                      ← Exported fixtures (Workspace)
-    │   └── asset_system_workspace.json
-    │
-    ├── tests/
-    │   ├── conftest.py                ← frappe mock setup
-    │   └── test_asset_system.py
-    │
-    └── asset_system/                  ← Module folder (module = "Asset System")
-        ├── __init__.py
-        └── doctype/
-            ├── asset/
-            │   ├── asset.json         ← DocType schema
-            │   ├── asset.py           ← Server-side controller
-            │   └── asset.js           ← Client-side controller
-            ├── asset_category/
-            ├── location/
-            ├── asset_movement/
-            └── asset_assignment/
-```
+From `asset_system/asset_system/doctype/byt_asset/byt_asset.py`:
 
----
+- Allowed status transitions:
+  - `Available -> In Use / Assigned / Maintenance / Scrapped`
+  - `In Use -> Available / Maintenance / Scrapped`
+  - `Assigned -> Available / Maintenance / Scrapped`
+  - `Maintenance -> Available / In Use / Assigned / Scrapped`
+  - `Scrapped` is terminal
+- `assigned_to` auto-sync:
+  - if assigned and status is `Available`, status becomes `Assigned`
+  - if unassigned and status is `Assigned`, status becomes `Available`
+- Per-asset `User Permission` is created/removed based on assignment.
 
-## DocTypes
+Related behavior:
 
-| DocType | Autoname | Submittable | Description |
-|---------|----------|-------------|-------------|
-| **BYT Asset** | `AST-{####}` | No | Core entity. Lifecycle: Available → In Use → Maintenance → Scrapped |
-| **Asset Category** | By `category_name` | No | Groups assets (Electronics, Furniture, etc.) |
-| **Location** | By `location_name` | No | Physical location (supports parent/child) |
-| **Asset Movement** | `ASTMV-{####}` | Yes | Records movement between locations |
-| **Asset Assignment** | `ASTAS-{####}` | Yes | Records assignment to a user |
+- `Asset Movement` blocks scrapped assets and updates `BYT Asset.location` on submit.
+- `Asset Assignment` blocks scrapped/in-use assets and updates `BYT Asset.assigned_to/status`.
+- `Asset Return` validates assignment consistency, sets assignment return data/status, and resets asset to `Available`.
 
-### Asset Status Lifecycle
+## Workspace
 
-```
-  Available ──────────────────────────────► Scrapped
-      │   ▲              ▲                     ▲
-      ▼   │              │                     │
-    In Use ──────────────┤                     │
-      │   ▲          Maintenance ──────────────┘
-      └───┘
-```
+`Asset System` workspace includes shortcuts for:
 
----
+- `BYT Asset`
+- `Asset Category`
+- `Location`
+- `Asset Movement`
+- `Asset Assignment`
+- `Asset Return`
 
-## Roles & Permissions
+## Hooks and fixtures
 
-| Role | Assets | Movements | Assignments | Categories | Locations |
-|------|--------|-----------|-------------|------------|-----------|
-| **System Manager** | Full | Full | Full | Full | Full |
-| **Asset Manager** | Create/Edit | Create/Submit | Create/Submit | Create/Edit | Create/Edit |
-| **Asset Employee** | Read-only | Read-only | Read-only | Read-only | Read-only |
+`asset_system/hooks.py` currently configures:
 
----
+- global app CSS/JS includes
+- fixtures for:
+  - `Role` (`Asset Manager`, `Asset Employee`)
+  - `Workspace` (`Asset System`)
+- `doc_events` for `BYT Asset` (`before_insert`, `validate`)
+- custom permission handlers for `BYT Asset`
+
+## API endpoints (whitelisted)
+
+Methods are defined in `asset_system/api/api.py` and are callable via:
+
+`/api/method/asset_system.api.api.<method_name>`
+
+Primary endpoints:
+
+- `create_asset`
+- `get_assets`
+- `move_asset`
+- `assign_asset`
+- `get_asset_history`
+- `return_asset`
+- `get_dashboard_stats`
+
+Additional utility endpoints in the same module:
+
+- `can_create_asset`
+- `can_create_assignment`
+- `get_Assetss`
+- `who_am_i`
+- `get_user_roles`
+- `get_asset_details`
+- `get_doctype_meta`
+- `search_link_options`
 
 ## Installation
 
 ```bash
-# 1. Get the app
 cd /path/to/frappe-bench
 bench get-app https://github.com/AaronShenny/AssetManagementSystem
-
-# 2. Install on a site
 bench --site your-site.local install-app asset_system
-
-# 3. Run migrations
 bench --site your-site.local migrate
-
-# 4. Build static assets
 bench build --app asset_system
 ```
 
-### Renaming from `Asset` to `BYT Asset` (Frappe v15 + ERPNext)
+## Migration note (`Asset` -> `BYT Asset`)
 
-If your site was using an older custom DocType named `Asset`, apply this safe rename flow to avoid collision with ERPNext's built-in `Asset` DocType:
+If upgrading from an older custom doctype named `Asset`, run:
 
 ```bash
-# 1) Verify the patch is present
-cat apps/asset_system/asset_system/patches.txt
-
-# 2) Run schema/data migration (executes rename patch)
 bench --site your-site.local migrate
-
-# 3) Rebuild assets and restart processes
-bench build --app asset_system
-bench restart
 ```
 
-What is already handled in this app:
+The included patches guard against renaming ERPNext-owned `Asset` doctypes and update link references/workspace references to `BYT Asset`.
 
-- Rename patch: `asset_system.patches.v1_0.rename_asset_to_byt_asset`.
-- Patch guardrails: only renames `Asset` when `module == "Asset System"` (so ERPNext Asset is untouched).
-- Updated Python/controller path: `asset_system.asset_system.doctype.byt_asset.byt_asset`.
-- Updated link targets in dependent DocTypes (`Asset Movement`, `Asset Assignment`) and Workspace shortcuts/content.
+## Tests
 
-Recommended post-migration checks:
+Repository unit tests are under:
+
+- `asset_system/tests/conftest.py` (frappe mock bootstrap)
+- `asset_system/tests/test_asset_system.py`
+
+Run:
 
 ```bash
-# DocType ownership / conflict check
-bench --site your-site.local console
->>> frappe.db.get_value("DocType", "Asset", "module")      # should be ERPNext module (usually "Assets")
->>> frappe.db.get_value("DocType", "BYT Asset", "module")  # should be "Asset System"
->>> frappe.get_meta("Asset Movement").get_field("asset").options
->>> frappe.get_meta("Asset Assignment").get_field("asset").options
-```
-
-Common edge cases and fixes:
-
-- **`DuplicateEntryError: BYT Asset already exists` during patch**  
-  Happens when someone manually renamed before migration. Keep only one DocType and re-run `bench --site ... migrate`.
-- **`ImportError` referencing `doctype.asset.asset`**  
-  Update stale imports to `doctype.byt_asset.byt_asset` and run `bench --site ... clear-cache`.
-- **Workspace shortcuts still opening old DocType**  
-  Re-export/reload fixture and run `bench --site ... migrate`, then clear cache and hard refresh.
-- **Custom scripts/server scripts still using `"Asset"`**  
-  Update them to `"BYT Asset"` manually from Desk.
-
-Or for development (editable install):
-
-```bash
-pip install -e /path/to/asset_system/
-```
-
----
-
-## Whitelisted API
-
-All endpoints are accessible at `/api/method/asset_system.api.asset_api.<method_name>`.
-
-### `create_asset`
-
-```python
-import requests
-
-response = requests.post(
-    "https://your-site/api/method/asset_system.api.asset_api.create_asset",
-    data={
-        "asset_name": "Dell Laptop",
-        "category": "Electronics",
-        "location": "Head Office",
-        "purchase_date": "2024-01-15",
-        "purchase_value": 85000,
-        "serial_number": "SN-12345",
-    },
-    headers={"Authorization": "token api_key:api_secret"},
-)
-# Response: {"message": {"asset_id": "AST-0001", "status": "Available", ...}}
-```
-
-### `get_assets`
-
-```python
-response = requests.get(
-    "https://your-site/api/method/asset_system.api.asset_api.get_assets",
-    params={"status": "Available", "page": 1, "page_length": 10},
-    headers={"Authorization": "token api_key:api_secret"},
-)
-# Response: {"message": {"total": 42, "assets": [...]}}
-```
-
-### `move_asset`
-
-```python
-response = requests.post(
-    "https://your-site/api/method/asset_system.api.asset_api.move_asset",
-    data={
-        "asset": "AST-0001",
-        "to_location": "Branch Office",
-        "remarks": "Relocated for project",
-    },
-    headers={"Authorization": "token api_key:api_secret"},
-)
-```
-
-### `assign_asset`
-
-```python
-response = requests.post(
-    "https://your-site/api/method/asset_system.api.asset_api.assign_asset",
-    data={
-        "asset": "AST-0001",
-        "assigned_to": "john@example.com",
-        "assigned_date": "2024-02-01",
-    },
-    headers={"Authorization": "token api_key:api_secret"},
-)
-```
-
-### `get_asset_history`
-
-```python
-response = requests.get(
-    "https://your-site/api/method/asset_system.api.asset_api.get_asset_history",
-    params={"asset": "AST-0001"},
-    headers={"Authorization": "token api_key:api_secret"},
-)
-# Response: {"message": {"asset": "AST-0001", "movements": [...], "assignments": [...]}}
-```
-
-### `get_dashboard_stats`
-
-```python
-response = requests.get(
-    "https://your-site/api/method/asset_system.api.asset_api.get_dashboard_stats",
-    headers={"Authorization": "token api_key:api_secret"},
-)
-# Response: {"message": {"total": 50, "available": 20, "in_use": 25, "maintenance": 3, "scrapped": 2}}
-```
-
----
-
-## Sample Test Data (bench console)
-
-```python
-import frappe
-
-# 1. Create categories
-frappe.get_doc({"doctype": "Asset Category", "category_name": "Electronics",    "depreciation_applicable": 1, "expected_life": 5}).insert()
-frappe.get_doc({"doctype": "Asset Category", "category_name": "Furniture",      "depreciation_applicable": 1, "expected_life": 10}).insert()
-frappe.get_doc({"doctype": "Asset Category", "category_name": "Office Supplies", "depreciation_applicable": 0}).insert()
-
-# 2. Create locations
-frappe.get_doc({"doctype": "Location", "location_name": "Head Office"}).insert()
-frappe.get_doc({"doctype": "Location", "location_name": "Branch Office"}).insert()
-frappe.get_doc({"doctype": "Location", "location_name": "IT Room", "parent_location": "Head Office"}).insert()
-
-# 3. Create assets
-laptop = frappe.get_doc({
-    "doctype": "BYT Asset",
-    "asset_name": "Dell Laptop XPS 15",
-    "category": "Electronics",
-    "location": "Head Office",
-    "purchase_date": "2024-01-15",
-    "purchase_value": 85000,
-    "serial_number": "SN-DELL-001",
-})
-laptop.insert()
-
-# 4. Move asset
-movement = frappe.get_doc({
-    "doctype": "Asset Movement",
-    "asset": laptop.name,
-    "from_location": "Head Office",
-    "to_location": "IT Room",
-    "movement_date": frappe.utils.today(),
-})
-movement.insert()
-movement.submit()
-
-# 5. Assign asset
-assignment = frappe.get_doc({
-    "doctype": "Asset Assignment",
-    "asset": laptop.name,
-    "assigned_to": "administrator@example.com",
-    "assigned_date": frappe.utils.today(),
-})
-assignment.insert()
-assignment.submit()
-
-frappe.db.commit()
-print("Test data created!")
-```
-
----
-
-## hooks.py: How It Works
-
-`hooks.py` is the main configuration file for a Frappe app. Key sections:
-
-| Hook | Purpose |
-|------|---------|
-| `app_include_css / app_include_js` | Include custom CSS/JS on every Frappe Desk page |
-| `doc_events` | Wire Python functions to DocType lifecycle events (validate, on_submit, etc.) |
-| `fixtures` | Define what data is exported with `bench export-fixtures` |
-| `scheduler_events` | Schedule background tasks (daily, weekly, etc.) |
-
----
-
-## Running Tests
-
-```bash
-# Without a live Frappe site (unit tests only)
-cd asset_system/
 python -m pytest asset_system/tests/ -v
-
-# With a live Frappe bench
-bench run-tests --app asset_system
 ```
