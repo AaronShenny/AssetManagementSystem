@@ -12,7 +12,8 @@ from __future__ import unicode_literals
 import frappe
 from frappe import _
 from frappe.utils import today
-
+from frappe.query_builder import DocType
+from pypika import Order
 
 # ---------------------------------------------------------------------------#
 # Helpers                                                                    #
@@ -582,3 +583,350 @@ def search_link_options(doctype, txt=""):
         fields=["name"],
         limit=20
     )
+ALLOWED_FILTER_OPERATORS = {"=", "!=", "<", ">", "<=", ">=", "like", "in", "between"}
+
+
+def _parse_json(value, fallback):
+    if value is None:
+        return fallback
+    if isinstance(value, (list, dict)):
+        return value
+    try:
+        return frappe.parse_json(value)
+    except Exception:
+        return fallback
+
+
+def _normalize_in_values(value):
+    if isinstance(value, (list, tuple)):
+        return [v for v in value if str(v).strip() != ""]
+    if value is None:
+        return []
+    return [v.strip() for v in str(value).split(",") if v.strip()]
+
+
+def _build_condition(field_sql: str, operator: str, value) -> Tuple[str, List]:
+    operator = (operator or "").lower().strip()
+    if operator not in ALLOWED_FILTER_OPERATORS:
+        return "", []
+    if operator == "between":
+        if not isinstance(value, (list, tuple)) or len(value) != 2:
+            return "", []
+        return f"{field_sql} BETWEEN %s AND %s", [value[0], value[1]]
+    if operator == "in":
+        values = _normalize_in_values(value)
+        if not values:
+            return "", []
+        return f"{field_sql} IN ({', '.join(['%s'] * len(values))})", list(values)
+    if operator == "like":
+        return f"{field_sql} LIKE %s", [f"%{value}%"]
+    return f"{field_sql} {operator} %s", [value]
+
+
+@frappe.whitelist()
+def get_doctype_meta(doctype: str):
+    if not doctype:
+        frappe.throw(_("doctype is required"))
+    meta = frappe.get_meta(doctype)
+    return {
+        "fields": [
+            {
+                "fieldname": f.fieldname,
+                "label": f.label,
+                "fieldtype": f.fieldtype,
+                "hidden": f.hidden,
+                "read_only": f.read_only,
+                "reqd": f.reqd,
+                "options": f.options,
+                "in_list_view": f.in_list_view,
+                "default": f.default,
+            }
+            for f in meta.fields
+        ]
+    }
+
+
+@frappe.whitelist()
+def get_unified_filter_catalog(doctype: str = "BYT Asset"):
+    """Single business-facing filter catalog with hidden relational semantics."""
+    meta = frappe.get_meta(doctype)
+    parent_catalog = []
+    for field in meta.fields:
+        if field.hidden or not field.fieldname or field.fieldtype in {"Table", "Section Break", "Column Break", "Tab Break", "HTML", "Button", "Fold", "Table MultiSelect"}:
+            continue
+        parent_catalog.append({
+            "key": f"parent:{field.fieldname}",
+            "label": field.label or field.fieldname.replace("_", " ").title(),
+            "type": "parent",
+            "fieldtype": field.fieldtype,
+            "options": field.options,
+            "source": {"fieldname": field.fieldname},
+        })
+
+    virtual_catalog = []
+    for field in meta.fields:
+        if field.fieldtype != "Table" or not field.options:
+            continue
+        child_meta = frappe.get_meta(field.options)
+        child_fields = {f.fieldname: f for f in child_meta.fields if f.fieldname}
+        if "spec" not in child_fields or "value" not in child_fields:
+            continue
+        child_table = DocType(field.options)
+        specs = (
+            frappe.qb.from_(child_table)
+            .select(child_table.spec)
+            .distinct()
+            .where(
+                (child_table.spec.isnotnull()) &
+                (child_table.spec != "")
+            )
+            .orderby(child_table.spec, order=Order.asc)
+        ).run(pluck=True)
+        for spec in specs:
+            virtual_catalog.append({
+                "key": f"virtual_spec:{field.fieldname}:{spec}",
+                "label": spec,
+                "type": "virtual_specification",
+                "fieldtype": child_fields["value"].fieldtype or "Data",
+                "source": {
+                    "tableField": field.fieldname,
+                    "childDoctype": field.options,
+                    "keyField": "spec",
+                    "keyValue": spec,
+                    "valueField": "value",
+                },
+            })
+
+    return {"catalog": parent_catalog + virtual_catalog}
+
+from typing import Dict, List, Tuple
+
+
+ALLOWED_FILTER_OPERATORS = {"=", "!=", "<", ">", "<=", ">=", "like", "in", "between"}
+
+
+def _parse_json(value, fallback):
+    if value is None:
+        return fallback
+    if isinstance(value, (list, dict)):
+        return value
+    try:
+        return frappe.parse_json(value)
+    except Exception:
+        return fallback
+
+
+def _normalize_in_values(value):
+    if isinstance(value, (list, tuple)):
+        return [v for v in value if str(v).strip() != ""]
+    if value is None:
+        return []
+    return [v.strip() for v in str(value).split(",") if v.strip()]
+
+
+def _build_condition(field_sql: str, operator: str, value) -> Tuple[str, List]:
+    if not operator:
+        return "", []
+    operator = operator.lower().strip()
+    if operator not in ALLOWED_FILTER_OPERATORS:
+        return "", []
+
+    if operator == "between":
+        if not isinstance(value, (list, tuple)) or len(value) != 2:
+            return "", []
+        return f"{field_sql} BETWEEN %s AND %s", [value[0], value[1]]
+
+    if operator == "in":
+        values = _normalize_in_values(value)
+        if not values:
+            return "", []
+        placeholders = ", ".join(["%s"] * len(values))
+        return f"{field_sql} IN ({placeholders})", list(values)
+
+    if operator == "like":
+        return f"{field_sql} LIKE %s", [f"%{value}%"]
+
+    return f"{field_sql} {operator} %s", [value]
+
+
+def _sanitize_order_by(order_by: str, meta) -> str:
+    if not order_by:
+        return "`parent`.`modified` desc"
+
+    parts = [p for p in str(order_by).split(" ") if p]
+    fieldname = parts[0]
+    direction = parts[1].lower() if len(parts) > 1 else "asc"
+    direction = direction if direction in ("asc", "desc") else "asc"
+
+    if fieldname not in {"name", "modified"} and not meta.has_field(fieldname):
+        return "`parent`.`modified` desc"
+
+    return f"`parent`.`{fieldname}` {direction}"
+
+
+def _build_parent_conditions(meta, parent_filters: List) -> Tuple[List[str], List]:
+    conditions = []
+    params = []
+
+    for row in parent_filters or []:
+        if not isinstance(row, (list, tuple)) or len(row) < 3:
+            continue
+
+        fieldname, operator, value = row[0], row[1], row[2]
+        if fieldname not in {"name", "modified"} and not meta.has_field(fieldname):
+            continue
+
+        condition, condition_params = _build_condition(f"`parent`.`{fieldname}`", operator, value)
+        if not condition:
+            continue
+
+        conditions.append(condition)
+        params.extend(condition_params)
+
+    return conditions, params
+
+
+def _normalize_child_filter_groups(filters_for_table) -> List[List[Dict]]:
+    groups = []
+    if not isinstance(filters_for_table, (list, tuple)):
+        return groups
+
+    for entry in filters_for_table:
+        if not isinstance(entry, dict):
+            continue
+        if isinstance(entry.get("conditions"), (list, tuple)):
+            conditions = entry.get("conditions")
+        elif "child_field" in entry or "field" in entry:
+            conditions = [entry]
+        else:
+            continue
+        groups.append(conditions)
+
+    return groups
+
+
+def _build_child_group_exists(
+    doctype: str, table_field, group_conditions: List[Dict], valid_child_fields: set
+) -> Tuple[str, List]:
+    conditions = []
+    params = []
+
+    for condition in group_conditions or []:
+        if not isinstance(condition, dict):
+            continue
+        child_field = condition.get("field") or condition.get("child_field")
+        operator = condition.get("operator")
+        value = condition.get("value")
+        if child_field not in valid_child_fields:
+            continue
+
+        sql_fragment, condition_params = _build_condition(
+            f"`child`.`{child_field}`", operator, value
+        )
+        if not sql_fragment:
+            continue
+
+        conditions.append(sql_fragment)
+        params.extend(condition_params)
+
+    if not conditions:
+        return "", []
+
+    where_conditions = " AND ".join([f"({condition})" for condition in conditions])
+    sql = f"""
+        EXISTS (
+            SELECT 1
+            FROM `tab{table_field.options}` `child`
+            WHERE `child`.`parenttype` = %s
+              AND `child`.`parentfield` = %s
+              AND `child`.`parent` = `parent`.`name`
+              AND {where_conditions}
+        )
+    """.strip()
+
+    return sql, [doctype, table_field.fieldname] + params
+
+
+@frappe.whitelist()
+def get_filtered_doctype_list(
+    doctype: str,
+    parent_filters=None,
+    child_table_filters=None,
+    fields=None,
+    limit_start=0,
+    limit_page_length=100,
+    order_by=None,
+):
+    if not doctype:
+        frappe.throw(_("doctype is required"))
+
+    meta = frappe.get_meta(doctype)
+    parent_filters = _parse_json(parent_filters, [])
+    child_table_filters = _parse_json(child_table_filters, {})
+    fields = _parse_json(fields, ["name"])
+
+    if not isinstance(parent_filters, (list, tuple)):
+        parent_filters = []
+
+    if not isinstance(child_table_filters, dict):
+        child_table_filters = {}
+
+    if not isinstance(fields, (list, tuple)):
+        fields = ["name"]
+
+    safe_fields = []
+    for field in fields:
+        if field in {"name", "modified"} or meta.has_field(field):
+            safe_fields.append(field)
+
+    if not safe_fields:
+        safe_fields = ["name"]
+
+    parent_conditions, parent_params = _build_parent_conditions(meta, parent_filters)
+
+    child_conditions = []
+    child_params = []
+    for field in meta.fields:
+        if field.fieldtype != "Table" or not field.options:
+            continue
+        filters_for_table = child_table_filters.get(field.fieldname)
+        if not filters_for_table:
+            continue
+
+        groups = _normalize_child_filter_groups(filters_for_table)
+        if not groups:
+            continue
+
+        child_meta = frappe.get_meta(field.options)
+        valid_child_fields = {f.fieldname for f in child_meta.fields if f.fieldname}
+        for group_conditions in groups:
+            exists_sql, exists_params = _build_child_group_exists(
+                doctype, field, group_conditions, valid_child_fields
+            )
+            if not exists_sql:
+                continue
+            child_conditions.append(exists_sql)
+            child_params.extend(exists_params)
+
+    where_clauses = []
+    if parent_conditions:
+        where_clauses.append(" AND ".join(parent_conditions))
+
+    if child_conditions:
+        where_clauses.extend(child_conditions)
+
+    where_sql = " AND ".join(where_clauses) if where_clauses else "1=1"
+    order_by_sql = _sanitize_order_by(order_by, meta)
+
+    fields_sql = ", ".join([f"`parent`.`{field}`" for field in safe_fields])
+    sql = f"""
+        SELECT {fields_sql}
+        FROM `tab{doctype}` `parent`
+        WHERE {where_sql}
+        ORDER BY {order_by_sql}
+        LIMIT %s OFFSET %s
+    """.strip()
+
+    params = parent_params + child_params + [int(limit_page_length), int(limit_start)]
+    results = frappe.db.sql(sql, params, as_dict=True)
+    return {"data": results}

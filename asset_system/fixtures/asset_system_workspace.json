@@ -11,6 +11,7 @@
  "doctype": "Workspace",
  "hide_custom": 0,
  "icon": "assets",
+ "type" : "Workspace",
  "is_hidden": 0,
  "title" : "Asset System",
  "label": "Asset System",

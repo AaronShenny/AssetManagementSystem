@@ -1,6 +1,7 @@
 frappe.ui.form.on("BYT Asset", {
     refresh: function (frm) {
         // Quick action buttons
+	
         if (!frm.doc.__islocal) {
             if (frm.doc.status !== "Scrapped") {
                 frm.add_custom_button(__("Move Asset"), function () {
@@ -34,8 +35,8 @@ frappe.ui.form.on("BYT Asset", {
             frm.page.set_indicator(__("In Use"), "blue");
         } else if (frm.doc.status === "Maintenance") {
             frm.page.set_indicator(__("Maintenance"), "orange");
-        } else if (frm.doc.status === "Scrapped") {
-            frm.page.set_indicator(__("Scrapped"), "red");
+        } else if (frm.doc.status === "Deregistered") {
+            frm.page.set_indicator(__("Deregistered"), "red");
         }
     },
 
@@ -46,5 +47,20 @@ frappe.ui.form.on("BYT Asset", {
         if (!frm.doc.assigned_to && frm.doc.status === "In Use") {
             frm.set_value("status", "Available");
         }
+    }
+});
+
+frappe.ui.form.on("BYT Asset", {
+    setup(frm) {
+
+        frm.fields_dict.asset_specification.grid
+            .get_field("specs").get_query = function(doc) {
+
+            return {
+                filters: {
+                    category: doc.asset_category
+                }
+            };
+        };
     }
 });

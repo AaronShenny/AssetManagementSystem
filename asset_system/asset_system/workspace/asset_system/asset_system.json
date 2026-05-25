@@ -1,6 +1,7 @@
 {
+ "app": "asset_system",
  "charts": [],
- "content": "[{\"id\":\"assets-section\",\"type\":\"header\",\"data\":{\"text\":\"<span class=\\\"h4\\\">Assets</span>\",\"col\":12}},{\"id\":\"asset-shortcuts\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"BYT Asset\",\"col\":3}},{\"id\":\"asset-category-shortcuts\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"Asset Category\",\"col\":3}},{\"id\":\"location-shortcuts\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"Location\",\"col\":3}},{\"id\":\"movement-section\",\"type\":\"header\",\"data\":{\"text\":\"<span class=\\\"h4\\\">Movement &amp; Assignment</span>\",\"col\":12}},{\"id\":\"movement-shortcuts\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"Asset Movement\",\"col\":3}},{\"id\":\"assignment-shortcuts\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"Asset Assignment\",\"col\":3}},{\"id\":\"iz_spf-9eM\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"Asset Return\",\"col\":3}}]",
+ "content": "[{\"id\":\"assets-section\",\"type\":\"header\",\"data\":{\"text\":\"<span class=\\\"h4\\\">Assets</span>\",\"col\":12}},{\"id\":\"asset-shortcuts\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"BYT Asset\",\"col\":3}},{\"id\":\"asset-category-shortcuts\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"Asset Category\",\"col\":3}},{\"id\":\"location-shortcuts\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"Location\",\"col\":3}},{\"id\":\"movement-section\",\"type\":\"header\",\"data\":{\"text\":\"<span class=\\\"h4\\\">Movement &amp; Assignment</span>\",\"col\":12}},{\"id\":\"movement-shortcuts\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"Asset Movement\",\"col\":3}},{\"id\":\"assignment-shortcuts\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"Asset Assignment\",\"col\":3}},{\"id\":\"KzZCR9Xc0E\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"Asset Deregistration\",\"col\":3}}]",
  "creation": "2024-01-01 00:00:00",
  "custom_blocks": [],
  "docstatus": 0,
@@ -11,7 +12,7 @@
  "is_hidden": 0,
  "label": "Asset System",
  "links": [],
- "modified": "2026-05-18 11:10:06.695917",
+ "modified": "2026-05-25 12:25:09.711545",
  "modified_by": "Administrator",
  "module": "Asset System",
  "name": "Asset System",
@@ -24,19 +25,19 @@
  "sequence_id": 1.0,
  "shortcuts": [
   {
+   "color": "Grey",
+   "doc_view": "List",
+   "label": "Asset Deregistration",
+   "link_to": "Asset Deregistration",
+   "stats_filter": "[]",
+   "type": "DocType"
+  },
+  {
    "color": "Blue",
    "format": "{} Total",
    "label": "BYT Asset",
    "link_to": "BYT Asset",
    "stats_filter": "{}",
-   "type": "DocType"
-  },
-  {
-   "color": "Grey",
-   "doc_view": "List",
-   "label": "Asset Return",
-   "link_to": "Asset Return",
-   "stats_filter": "[]",
    "type": "DocType"
   },
   {
@@ -64,5 +65,6 @@
    "type": "DocType"
   }
  ],
- "title": "Asset System"
+ "title": "Asset System",
+ "type": "Workspace"
 }

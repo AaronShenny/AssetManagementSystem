@@ -5,11 +5,11 @@ from frappe.utils import now_datetime
 
 # Status transition rules
 ALLOWED_TRANSITIONS = {
-    "Available": ["In Use","Assigned", "Maintenance", "Scrapped"],
-    "In Use": ["Available", "Maintenance", "Scrapped"],
+    "Available": ["In Use","Assigned", "Maintenance", "Scrapped","Deregistered"],
+    "In Use": ["Available", "Maintenance"],
     "Assigned": ["Available", "Maintenance", "Scrapped"],
     "Maintenance": ["Available", "In Use","Assigned", "Scrapped"],
-    "Scrapped": [],  # terminal state
+    "Deregistered": [],  # terminal state
     
 }
 
@@ -163,7 +163,7 @@ def get_permission_query_conditions(user):
     if "System Manager" in frappe.get_roles(user):
         return ""
 
-    if "Asset Manager" in frappe.get_roles(user):
+    if "Infra Admin" in frappe.get_roles(user):
         return ""
 
     if "Asset Employee" in frappe.get_roles(user):

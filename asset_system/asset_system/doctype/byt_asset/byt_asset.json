@@ -22,6 +22,8 @@
   "purchase_value",
   "column_break_purchase",
   "description",
+  "section_break_gosi",
+  "specification",
   "section_break_qr",
   "qr_code"
  ],
@@ -68,7 +70,7 @@
    "in_list_view": 1,
    "in_standard_filter": 1,
    "label": "Status",
-   "options": "Available\nIn Use\nAssigned\nMaintenance\nScrapped",
+   "options": "Available\nIn Use\nAssigned\nMaintenance\nDeregistered",
    "reqd": 1
   },
   {
@@ -147,11 +149,21 @@
    "fieldtype": "Data",
    "hidden": 1,
    "label": "Location Abbreviation"
+  },
+  {
+   "fieldname": "section_break_gosi",
+   "fieldtype": "Section Break",
+   "label": "SPECIFICATIONS"
+  },
+  {
+   "fieldname": "specification",
+   "fieldtype": "Table",
+   "options": "Asset Specifications"
   }
  ],
  "icon": "fa fa-desktop",
  "links": [],
- "modified": "2026-05-19 11:45:40.927772",
+ "modified": "2026-05-25 14:23:16.856507",
  "modified_by": "Administrator",
  "module": "Asset System",
  "name": "BYT Asset",
@@ -169,26 +181,6 @@
    "role": "System Manager",
    "share": 1,
    "write": 1
-  },
-  {
-   "email": 1,
-   "export": 1,
-   "permlevel": 2,
-   "print": 1,
-   "read": 1,
-   "report": 1,
-   "role": "Asset Manager",
-   "share": 1,
-   "write": 1
-  },
-  {
-   "email": 1,
-   "export": 1,
-   "print": 1,
-   "read": 1,
-   "report": 1,
-   "role": "Asset Employee",
-   "share": 1
   },
   {
    "delete": 1,
@@ -236,6 +228,18 @@
    "read": 1,
    "report": 1,
    "role": "Administrator",
+   "share": 1,
+   "write": 1
+  },
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "Infra Admin",
    "share": 1,
    "write": 1
   }
