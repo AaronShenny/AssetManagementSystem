@@ -1,0 +1,48 @@
+{
+ "actions": [],
+ "allow_rename": 1,
+ "creation": "2026-05-25 17:59:49.164624",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "field_name",
+  "old_data",
+  "new_data"
+ ],
+ "fields": [
+  {
+   "fieldname": "field_name",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "Field Name"
+  },
+  {
+   "fieldname": "old_data",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "Old data"
+  },
+  {
+   "fieldname": "new_data",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "New data"
+  }
+ ],
+ "grid_page_length": 50,
+ "index_web_pages_for_search": 1,
+ "istable": 1,
+ "links": [],
+ "modified": "2026-05-25 18:02:24.420764",
+ "modified_by": "Administrator",
+ "module": "Asset System",
+ "name": "Asset History Detail",
+ "owner": "Administrator",
+ "permissions": [],
+ "row_format": "Dynamic",
+ "rows_threshold_for_grid_search": 20,
+ "sort_field": "creation",
+ "sort_order": "DESC",
+ "states": []
+}
