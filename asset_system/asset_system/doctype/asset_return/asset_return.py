@@ -15,6 +15,7 @@ class AssetReturn(Document):
 
     def on_submit(self):
         self._apply_return_to_assignment()
+        self._record_deallocated()
 
     def on_cancel(self):
         self._revert_assignment()
@@ -113,4 +114,33 @@ class AssetReturn(Document):
                 "return_date": None,
             },
             update_modified=True,
+        )
+
+    def _record_deallocated(self):
+        """Record DEALLOCATED history after a formal asset return.
+
+        _apply_return_to_assignment() uses frappe.db.set_value on BYT Asset,
+        which bypasses its lifecycle hooks, so we create the history here.
+        """
+        from asset_system.utils.asset_history_service import create_asset_history
+
+        reason_label = self.return_reason or "Return"
+        create_asset_history(
+            asset=self.asset,
+            action_type="DEALLOCATED",
+            reference_doctype="Asset Return",
+            reference_docname=self.name,
+            remarks=f"Asset returned by {self.employee}. Reason: {reason_label}.",
+            changes=[
+                {
+                    "field_name": "Assigned To",
+                    "old_data": self.employee or "",
+                    "new_data": "",
+                },
+                {
+                    "field_name": "Return Reason",
+                    "old_data": "",
+                    "new_data": reason_label,
+                },
+            ],
         )
