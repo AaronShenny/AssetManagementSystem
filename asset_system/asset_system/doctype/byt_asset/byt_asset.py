@@ -181,7 +181,7 @@ def get_permission_query_conditions(user):
     if "Infra Admin" in frappe.get_roles(user):
         return ""
 
-    if "Asset Employee" in frappe.get_roles(user):
+    if "Employee" in frappe.get_roles(user):
         return f"`tabBYT Asset`.assigned_to = {frappe.db.escape(user)}"
 
     return "1=0"
