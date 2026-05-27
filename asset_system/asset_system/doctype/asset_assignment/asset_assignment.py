@@ -29,7 +29,7 @@ class AssetAssignment(Document):
     def _validate_asset_available(self):
         """Prevent assigning a Scrapped asset."""
         status = frappe.db.get_value("BYT Asset", self.asset, "status")
-        if status == "Scrapped" :
+        if status == "Deregistered" :
             frappe.throw(
                 _("Asset {0} is Scrapped and cannot be assigned.").format(self.asset)
             )
@@ -37,15 +37,19 @@ class AssetAssignment(Document):
             frappe.throw(
                 _("Asset {0} is in use and cannot be assigned. Unassign first").format(self.asset)
             )
-
+    def _unassign_asset(self):
+        """On cancel, clear Asset.assigned_to and set status to Available."""
+        frappe.db.set_value("BYT Asset", self.asset, {
+            "assigned_to": None,
+            "status": "Available",
+        })
     def _assign_asset(self):
         """On submit, update Asset.assigned_to and set status to In Use."""
         asset_doc = frappe.get_doc("BYT Asset", self.asset)
 
         
         if self.status in ['Off Board','Replacement','Damage','Other Reason']:
-            asset_doc.assigned_to = None
-            asset_doc.status = "Available"
+            _unassign_asset(self)
         else:
             asset_doc.assigned_to = self.assigned_to
             asset_doc.status = self.status
@@ -70,12 +74,7 @@ class AssetAssignment(Document):
                 ).format(self.assigned_to, self.asset, self.assigned_date),
             )
 
-    def _unassign_asset(self):
-        """On cancel, clear Asset.assigned_to and set status to Available."""
-        frappe.db.set_value("BYT Asset", self.asset, {
-            "assigned_to": None,
-            "status": "Available",
-        })
+    
 
     def _record_deallocated_on_trash(self):
         """Record DEALLOCATED when an Asset Assignment document is deleted.

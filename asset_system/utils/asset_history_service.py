@@ -44,12 +44,8 @@ _IGNORED_FIELDS = frozenset(
         "name",
         "owner",
         "creation",
-        "modified",
-        "modified_by",
         "docstatus",
         "idx",
-        "parent",
-        "parenttype",
         "parentfield",
         "_user_tags",
         "__last_sync_on",
@@ -57,8 +53,7 @@ _IGNORED_FIELDS = frozenset(
         "asset_id",
         "category_abbreviation",
         "location_abbreviation",
-        # Binary / attachment
-        "qr_code",
+        # Binary / attachments
         # Structural UI fields
         "section_break_info",
         "section_break_purchase",
@@ -80,7 +75,6 @@ _IGNORED_FIELDTYPES = frozenset(
         "Fold",
         "Heading",
         "Image",
-        "Attach Image",
     }
 )
 
