@@ -20,7 +20,7 @@ class AssetRepository:
             asset,
             {
                 "assigned_to": assigned_to,
-                "status": "In Use"
+                "status": "Assigned"
             }
         )
 
@@ -35,6 +35,5 @@ class AssetRepository:
                 "status": "Available"
             }
         )
-
 
 

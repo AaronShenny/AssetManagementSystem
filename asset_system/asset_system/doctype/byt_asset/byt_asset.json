@@ -72,7 +72,7 @@
    "in_list_view": 1,
    "in_standard_filter": 1,
    "label": "Status",
-   "options": "Available\nIn Use\nAssigned\nMaintenance\nDeregistered",
+   "options": "Available\nAssigned\nMaintenance\nDeregistered",
    "reqd": 1
   },
   {
@@ -190,20 +190,16 @@
    "title": "Available"
   },
   {
-   "color": "Blue",
-   "title": "In Use"
-  },
-  {
    "color": "Orange",
    "title": "Maintenance"
   },
   {
-   "color": "Red",
-   "title": "Scrapped"
-  },
-  {
    "color": "Blue",
    "title": "Assigned"
+  },
+  {
+   "color": "Red",
+   "title": "Deregistered"
   }
  ],
  "title_field": "asset_name",

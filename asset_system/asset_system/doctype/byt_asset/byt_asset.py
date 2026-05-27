@@ -5,10 +5,9 @@ from frappe.utils import now_datetime
 
 # Status transition rules
 ALLOWED_TRANSITIONS = {
-    "Available": ["In Use","Assigned", "Maintenance", "Scrapped","Deregistered"],
-    "In Use": ["Available", "Maintenance"],
-    "Assigned": ["Available", "Maintenance", "Scrapped"],
-    "Maintenance": ["Available", "Assigned", "Scrapped"],
+    "Available": ["Assigned", "Maintenance", "Deregistered"],
+    "Assigned": ["Available", "Maintenance", "Deregistered"],
+    "Maintenance": ["Available", "Assigned", "Deregistered"],
     "Deregistered": [],  # terminal state
     
 }
@@ -146,6 +145,8 @@ class BYTAsset(Document):
 # Module-level functions wired via hooks.py doc_events                #
 # ------------------------------------------------------------------ #
 def has_permission(doc, user=None, permission_type=None):
+    from asset_system.asset_system.doctype.asset_assignment.helpers import get_active_assignment
+
     user = user or frappe.session.user
 
     # Allow System Manager
@@ -158,17 +159,8 @@ def has_permission(doc, user=None, permission_type=None):
 
     # Allow assigned Asset Employee
     if "Asset Employee" in frappe.get_roles(user):
-
-        assigned = frappe.db.exists(
-            "Asset Assignment",
-            {
-                "asset": doc.name,
-                "assigned_to": user
-                #"status": "Active"
-            }
-        )
-
-        return bool(assigned)
+        active_assignment = get_active_assignment(doc.name)
+        return bool(active_assignment and active_assignment.get("assigned_to") == user)
 
 def get_permission_query_conditions(user):
 
@@ -182,7 +174,11 @@ def get_permission_query_conditions(user):
         return ""
 
     if "Employee" in frappe.get_roles(user):
-        return f"`tabBYT Asset`.assigned_to = {frappe.db.escape(user)}"
+        escaped_user = frappe.db.escape(user)
+        return (
+            "exists (select 1 from `tabAsset Assignment` aa "
+            f"where aa.asset = `tabBYT Asset`.name and aa.assigned_to = {escaped_user} and aa.is_active = 1)"
+        )
 
     return "1=0"
 def before_insert(doc, method=None):
