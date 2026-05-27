@@ -5,9 +5,14 @@ from frappe.model.document import Document
 
 
 class AssetIssue(Document):
-	def on_update(self):
-		if doc.status not in ['Open','Resolved','Closed']:
-			asset_doc = frappe.get_doc("BYT Asset",self.asset);
-			asset_doc.set_value({
-				status = "Maintenance";
-			})
+
+
+    def on_update(self):
+
+        if self.status not in ["Open", "Resolved", "Closed"]:
+
+            asset_doc = frappe.get_doc("BYT Asset", self.asset)
+
+            asset_doc.status = "Maintenance"
+
+            asset_doc.save()
