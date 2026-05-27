@@ -158,7 +158,7 @@ def has_permission(doc, user=None, permission_type=None):
         return True
 
     # Allow assigned Asset Employee
-    if "Asset Employee" in frappe.get_roles(user):
+    if "Employee" in frappe.get_roles(user):
         active_assignment = get_active_assignment(doc.name)
         return bool(active_assignment and active_assignment.get("assigned_to") == user)
 
@@ -173,7 +173,7 @@ def get_permission_query_conditions(user):
     if "Infra Admin" in frappe.get_roles(user):
         return ""
 
-    if "Asset Employee" in frappe.get_roles(user):
+    if "Employee" in frappe.get_roles(user):
         escaped_user = frappe.db.escape(user)
         return (
             "exists (select 1 from `tabAsset Assignment` aa "
