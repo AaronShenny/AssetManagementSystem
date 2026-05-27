@@ -11,6 +11,7 @@
   "section_break_info",
   "category",
   "category_abbreviation",
+  "managers_approval_needed",
   "status",
   "column_break_info",
   "location",
@@ -25,7 +26,7 @@
   "section_break_gosi",
   "specification",
   "section_break_qr",
-  "qr_code"
+  "attachments"
  ],
  "fields": [
   {
@@ -46,7 +47,8 @@
    "fieldname": "serial_number",
    "fieldtype": "Data",
    "in_list_view": 1,
-   "label": "Serial Number"
+   "label": "Serial Number",
+   "reqd": 1
   },
   {
    "fieldname": "section_break_info",
@@ -123,13 +125,7 @@
   {
    "fieldname": "section_break_qr",
    "fieldtype": "Section Break",
-   "label": "QR Code"
-  },
-  {
-   "fieldname": "qr_code",
-   "fieldtype": "Attach Image",
-   "label": "QR Code",
-   "permlevel": 2
+   "label": "Attachments"
   },
   {
    "fieldname": "assigned_date",
@@ -159,91 +155,31 @@
    "fieldname": "specification",
    "fieldtype": "Table",
    "options": "Asset Specifications"
+  },
+  {
+   "default": "0",
+   "fetch_from": "category.manager_approval_needed",
+   "fieldname": "managers_approval_needed",
+   "fieldtype": "Check",
+   "hidden": 1,
+   "label": "Manager's Approval Needed?"
+  },
+  {
+   "fieldname": "attachments",
+   "fieldtype": "Table",
+   "label": "Attachments",
+   "options": "Attachments"
   }
  ],
  "icon": "fa fa-desktop",
  "links": [],
- "modified": "2026-05-25 14:23:16.856507",
+ "modified": "2026-05-26 12:43:43.204683",
  "modified_by": "Administrator",
  "module": "Asset System",
  "name": "BYT Asset",
  "naming_rule": "Expression",
  "owner": "Administrator",
- "permissions": [
-  {
-   "create": 1,
-   "delete": 1,
-   "email": 1,
-   "export": 1,
-   "print": 1,
-   "read": 1,
-   "report": 1,
-   "role": "System Manager",
-   "share": 1,
-   "write": 1
-  },
-  {
-   "delete": 1,
-   "email": 1,
-   "export": 1,
-   "permlevel": 2,
-   "print": 1,
-   "read": 1,
-   "report": 1,
-   "role": "System Manager",
-   "select": 1,
-   "share": 1,
-   "write": 1
-  },
-  {
-   "create": 1,
-   "delete": 1,
-   "email": 1,
-   "export": 1,
-   "print": 1,
-   "read": 1,
-   "report": 1,
-   "role": "Asset Manager",
-   "share": 1,
-   "write": 1
-  },
-  {
-   "create": 1,
-   "delete": 1,
-   "email": 1,
-   "export": 1,
-   "print": 1,
-   "read": 1,
-   "report": 1,
-   "role": "Administrator",
-   "share": 1,
-   "write": 1
-  },
-  {
-   "delete": 1,
-   "email": 1,
-   "export": 1,
-   "permlevel": 2,
-   "print": 1,
-   "read": 1,
-   "report": 1,
-   "role": "Administrator",
-   "share": 1,
-   "write": 1
-  },
-  {
-   "create": 1,
-   "delete": 1,
-   "email": 1,
-   "export": 1,
-   "print": 1,
-   "read": 1,
-   "report": 1,
-   "role": "Infra Admin",
-   "share": 1,
-   "write": 1
-  }
- ],
+ "permissions": [],
  "row_format": "Dynamic",
  "show_title_field_in_link": 1,
  "sort_field": "modified",
@@ -270,6 +206,6 @@
    "title": "Assigned"
   }
  ],
- "title_field": "asset_id",
+ "title_field": "asset_name",
  "track_changes": 1
 }

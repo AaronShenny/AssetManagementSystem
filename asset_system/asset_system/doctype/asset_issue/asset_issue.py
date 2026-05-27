@@ -5,5 +5,5 @@
 from frappe.model.document import Document
 
 
-class Damages(Document):
+class AssetIssue(Document):
 	pass

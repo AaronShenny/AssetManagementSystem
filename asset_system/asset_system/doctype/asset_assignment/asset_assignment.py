@@ -15,6 +15,7 @@ class AssetAssignment(Document):
 
     def on_trash(self):
         self._unassign_asset()
+        self._record_deallocated_on_trash()
 
     # ------------------------------------------------------------------ #
     # Private helpers                                                      #
@@ -75,6 +76,29 @@ class AssetAssignment(Document):
             "assigned_to": None,
             "status": "Available",
         })
+
+    def _record_deallocated_on_trash(self):
+        """Record DEALLOCATED when an Asset Assignment document is deleted.
+
+        _unassign_asset() uses frappe.db.set_value which bypasses BYT Asset
+        lifecycle hooks, so we create the history entry here explicitly.
+        """
+        from asset_system.utils.asset_history_service import create_asset_history
+
+        create_asset_history(
+            asset=self.asset,
+            action_type="DEALLOCATED",
+            reference_doctype="Asset Assignment",
+            reference_docname=self.name,
+            remarks=f"Assignment {self.name} was deleted.",
+            changes=[
+                {
+                    "field_name": "Assigned To",
+                    "old_data": self.assigned_to or "",
+                    "new_data": "",
+                }
+            ],
+        )
 
 
 # ------------------------------------------------------------------ #

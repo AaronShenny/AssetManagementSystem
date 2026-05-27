@@ -1,7 +1,7 @@
 // Copyright (c) 2026, Aaron Shenny and contributors
 // For license information, please see license.txt
 
-// frappe.ui.form.on("Damages", {
+// frappe.ui.form.on("Asset Issue", {
 // 	refresh(frm) {
 
 // 	},

@@ -574,15 +574,26 @@ def get_doctype_meta(doctype: str):
 
 @frappe.whitelist()
 def search_link_options(doctype, txt=""):
-
-    return frappe.get_all(
-        doctype,
-        filters={
-            "name": ["like", f"%{txt}%"]
-        },
-        fields=["name"],
-        limit=20
-    )
+    if doctype == "BYT Asset":
+        return frappe.get_all(
+            doctype,
+            filters={
+                "name": ["like", f"%{txt}%"],
+                "status" : ["!=","Deregistered"]
+            },
+            fields=["name"],
+            limit=20
+        )
+    else:
+        return frappe.get_all(
+            doctype,
+            filters={
+                "name": ["like", f"%{txt}%"]
+               
+            },
+            fields=["name"],
+            limit=20
+        )
 ALLOWED_FILTER_OPERATORS = {"=", "!=", "<", ">", "<=", ">=", "like", "in", "between"}
 
 

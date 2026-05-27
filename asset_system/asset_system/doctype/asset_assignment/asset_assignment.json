@@ -10,6 +10,7 @@
   "assigned_date",
   "return_date",
   "status",
+  "requires_manager_approval",
   "remarks",
   "amended_from",
   "proof_file"
@@ -64,7 +65,9 @@
   {
    "fieldname": "proof_file",
    "fieldtype": "Attach",
-   "label": "Proof"
+   "label": "Proof",
+   "mandatory_depends_on": "eval:doc.requires_manager_approval;",
+   "reqd": 1
   },
   {
    "default": "Assigned",
@@ -72,11 +75,19 @@
    "fieldtype": "Select",
    "label": "Status",
    "options": "Assigned\nReturned\nReplacement\nOff Board"
+  },
+  {
+   "default": "0",
+   "fetch_from": "asset.managers_approval_needed",
+   "fieldname": "requires_manager_approval",
+   "fieldtype": "Check",
+   "hidden": 1,
+   "label": "Manager's Approval Needed?"
   }
  ],
  "icon": "fa fa-user",
  "links": [],
- "modified": "2026-05-19 11:01:49.502305",
+ "modified": "2026-05-26 10:50:41.249329",
  "modified_by": "Administrator",
  "module": "Asset System",
  "name": "Asset Assignment",

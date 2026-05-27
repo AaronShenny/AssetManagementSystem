@@ -11,6 +11,7 @@ class AssetMovement(Document):
 
     def on_submit(self):
         self._update_asset_location()
+        self._record_moved()
 
     # ------------------------------------------------------------------ #
     # Private helpers                                                      #
@@ -35,6 +36,29 @@ class AssetMovement(Document):
         """On submit, update the current location on the linked Asset."""
         frappe.db.set_value("BYT Asset", self.asset, "location", self.to_location)
         frappe.db.set_value("BYT Asset", self.asset, "modified", frappe.utils.now())
+
+    def _record_moved(self):
+        """Record MOVED history after a formal Asset Movement is submitted.
+
+        _update_asset_location() uses frappe.db.set_value which bypasses BYT
+        Asset lifecycle hooks, so history is created here instead.
+        """
+        from asset_system.utils.asset_history_service import create_asset_history
+
+        create_asset_history(
+            asset=self.asset,
+            action_type="MOVED",
+            reference_doctype="Asset Movement",
+            reference_docname=self.name,
+            remarks=self.remarks or f"Asset moved from {self.from_location} to {self.to_location}.",
+            changes=[
+                {
+                    "field_name": "Location",
+                    "old_data": self.from_location or "",
+                    "new_data": self.to_location or "",
+                }
+            ],
+        )
 
 
 # ------------------------------------------------------------------ #

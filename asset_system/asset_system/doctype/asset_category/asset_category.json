@@ -7,7 +7,8 @@
  "engine": "InnoDB",
  "field_order": [
   "category_name",
-  "abbreviation"
+  "abbreviation",
+  "manager_approval_needed"
  ],
  "fields": [
   {
@@ -22,10 +23,16 @@
    "fieldname": "abbreviation",
    "fieldtype": "Data",
    "label": "Abbreviation"
+  },
+  {
+   "default": "0",
+   "fieldname": "manager_approval_needed",
+   "fieldtype": "Check",
+   "label": "Manager Approval needed?"
   }
  ],
  "links": [],
- "modified": "2026-05-11 18:02:37.823840",
+ "modified": "2026-05-26 00:38:47.971712",
  "modified_by": "Administrator",
  "module": "Asset System",
  "name": "Asset Category",

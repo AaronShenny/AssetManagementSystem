@@ -53,7 +53,7 @@ frappe.ui.form.on("BYT Asset", {
 frappe.ui.form.on("BYT Asset", {
     setup(frm) {
 
-        frm.fields_dict.asset_specification.grid
+        frm.fields_dict.specification.grid
             .get_field("specs").get_query = function(doc) {
 
             return {

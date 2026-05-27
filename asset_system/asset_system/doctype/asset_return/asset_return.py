@@ -12,9 +12,12 @@ class AssetReturn(Document):
         assignment = self._get_assignment()
         self._validate_matches_assignment(assignment)
         self._validate_dates(assignment)
+        if self.workflow_state == "Assigned" and not self.assigned_to:
+            frappe.throw("Assigned To is mandatory")
 
     def on_submit(self):
         self._apply_return_to_assignment()
+        self._record_deallocated()
 
     def on_cancel(self):
         self._revert_assignment()
@@ -93,15 +96,30 @@ class AssetReturn(Document):
 
         # Optional: if your BYT Asset doctype has fields for release/reset,
         # update them here. Keep this only if those fields actually exist.
-        frappe.db.set_value(
-            "BYT Asset",
-             self.asset,
-            {
-                "assigned_to": None,
-                "status": "Available",
-            },
-            update_modified=True,
-        )
+        status_of_asset = frappe.get.value("BYT Assset",self.asset,"status")
+        if status_of_asset != "Maintenance":
+            
+            frappe.db.set_value(
+                "BYT Asset",
+                 self.asset,
+                {
+                    "assigned_to": None,
+                    "status": "Available",
+                },
+                update_modified=True
+            )
+        else:
+            frappe.db.set_value(
+                "BYT Asset",
+                 self.asset,
+                {
+                    "assigned_to": None
+                    
+                },
+                update_modified=True
+            )
+    
+            
 
     def _revert_assignment(self):
         # Revert the linked assignment if this return doc is cancelled.
@@ -113,4 +131,33 @@ class AssetReturn(Document):
                 "return_date": None,
             },
             update_modified=True,
+        )
+
+    def _record_deallocated(self):
+        """Record DEALLOCATED history after a formal asset return.
+
+        _apply_return_to_assignment() uses frappe.db.set_value on BYT Asset,
+        which bypasses its lifecycle hooks, so we create the history here.
+        """
+        from asset_system.utils.asset_history_service import create_asset_history
+
+        reason_label = self.return_reason or "Return"
+        create_asset_history(
+            asset=self.asset,
+            action_type="DEALLOCATED",
+            reference_doctype="Asset Return",
+            reference_docname=self.name,
+            remarks=f"Asset returned by {self.employee}. Reason: {reason_label}.",
+            changes=[
+                {
+                    "field_name": "Assigned To",
+                    "old_data": self.employee or "",
+                    "new_data": "",
+                },
+                {
+                    "field_name": "Return Reason",
+                    "old_data": "",
+                    "new_data": reason_label,
+                },
+            ],
         )

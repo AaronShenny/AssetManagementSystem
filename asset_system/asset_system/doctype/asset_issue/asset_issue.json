@@ -1,0 +1,121 @@
+{
+ "actions": [],
+ "allow_rename": 1,
+ "autoname": "BYT-ASSET-ISSUE-.######.",
+ "creation": "2026-05-26 12:22:33.118582",
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "field_order": [
+  "issue_type",
+  "priority",
+  "description",
+  "attachments",
+  "reported_date",
+  "status",
+  "assigned_to",
+  "resolution_notes",
+  "closed_date",
+  "workflow_state_1"
+ ],
+ "fields": [
+  {
+   "fieldname": "issue_type",
+   "fieldtype": "Select",
+   "label": "Issue Type",
+   "options": "Hardware\nSoftware"
+  },
+  {
+   "default": "Medium",
+   "fieldname": "priority",
+   "fieldtype": "Select",
+   "label": "Priority",
+   "options": "Low\nMedium\nHigh\nCritical"
+  },
+  {
+   "fieldname": "description",
+   "fieldtype": "Small Text",
+   "label": "Description"
+  },
+  {
+   "fieldname": "attachments",
+   "fieldtype": "Table",
+   "label": "Attachments",
+   "options": "Attachments"
+  },
+  {
+   "fieldname": "reported_date",
+   "fieldtype": "Date",
+   "label": "Reported Date"
+  },
+  {
+   "default": "Open",
+   "fieldname": "status",
+   "fieldtype": "Select",
+   "hidden": 1,
+   "label": "Status",
+   "options": "Open\nAssigned\nIn Progress\nWaiting for IT\nWaiting for Vendor\nResolved\nClosed"
+  },
+  {
+   "fieldname": "assigned_to",
+   "fieldtype": "Link",
+   "label": "Assigned to",
+   "options": "User"
+  },
+  {
+   "fieldname": "resolution_notes",
+   "fieldtype": "Text",
+   "label": "Resolution Notes"
+  },
+  {
+   "fieldname": "closed_date",
+   "fieldtype": "Date",
+   "label": "Closed Date"
+  },
+  {
+   "fieldname": "workflow_state_1",
+   "fieldtype": "Select",
+   "label": "workflow_state",
+   "read_only": 1
+  }
+ ],
+ "grid_page_length": 50,
+ "index_web_pages_for_search": 1,
+ "links": [],
+ "modified": "2026-05-26 17:18:23.494802",
+ "modified_by": "Administrator",
+ "module": "Asset System",
+ "name": "Asset Issue",
+ "naming_rule": "Expression",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  },
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "Infra Executive",
+   "share": 1,
+   "write": 1
+  }
+ ],
+ "row_format": "Dynamic",
+ "rows_threshold_for_grid_search": 20,
+ "sort_field": "creation",
+ "sort_order": "DESC",
+ "states": []
+}

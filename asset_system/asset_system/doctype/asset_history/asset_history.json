@@ -7,18 +7,70 @@
  "engine": "InnoDB",
  "field_order": [
   "section_break_iwxf",
-  "amended_from",
+  "asset",
   "status",
   "changed_by",
   "changed_on",
+  "column_break_main",
   "reference_doctype",
   "reference_docname",
+  "amended_from",
+  "remarks_section",
+  "remarks",
+  "changes_section",
   "changes"
  ],
  "fields": [
   {
    "fieldname": "section_break_iwxf",
-   "fieldtype": "Section Break"
+   "fieldtype": "Section Break",
+   "label": "Event Details"
+  },
+  {
+   "bold": 1,
+   "fieldname": "asset",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "in_standard_filter": 1,
+   "label": "Asset",
+   "options": "BYT Asset",
+   "reqd": 1,
+   "search_index": 1
+  },
+  {
+   "fieldname": "status",
+   "fieldtype": "Select",
+   "in_list_view": 1,
+   "in_standard_filter": 1,
+   "label": "Action Type",
+   "options": "NEW REGISTRATION\nUPDATED\nALLOCATED\nDEALLOCATED\nTRANSFERRED\nMOVED\nISSUE RAISED\nUNDER MAINTENANCE\nISSUE RESOLVED\nDEREGISTRATION REQUEST\nDEREGISTRATION APPROVED\nDEREGISTRATION REJECTED\nDEREGISTERED\nMARKED DAMAGED\nMARKED LOST\nMARKED SCRAPPED\nRESTORED\nSPECIFICATION UPDATED\nUPGRADED"
+  },
+  {
+   "fieldname": "changed_by",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "label": "Changed By",
+   "options": "User"
+  },
+  {
+   "fieldname": "changed_on",
+   "fieldtype": "Datetime",
+   "in_list_view": 1,
+   "label": "Changed On"
+  },
+  {
+   "fieldname": "column_break_main",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "reference_doctype",
+   "fieldtype": "Data",
+   "label": "Reference Doctype"
+  },
+  {
+   "fieldname": "reference_docname",
+   "fieldtype": "Data",
+   "label": "Reference DocName"
   },
   {
    "fieldname": "amended_from",
@@ -31,31 +83,19 @@
    "search_index": 1
   },
   {
-   "fieldname": "status",
-   "fieldtype": "Select",
-   "label": "Action Type",
-   "options": "NEW REGISTRATION\nUPDATED\nALLOCATED\nDEALLOCATED\nTRANSFERRED\nMOVED\nISSUE RAISED\nUNDER MAINTENANCE\nISSUE RESOLVED\nDEREGISTRATION REQUEST\nDEREGISTRATION APPROVED\nDEREGISTRATION REJECTED\nDEREGISTERED\nMARKED DAMAGED\nMARKED LOST\nMARKED SCRAPPED\nRESTORED\nSPECIFICATION UPDATED\nUPGRADED"
+   "fieldname": "remarks_section",
+   "fieldtype": "Section Break",
+   "label": "Remarks"
   },
   {
-   "fieldname": "changed_by",
-   "fieldtype": "Link",
-   "label": "Changed by",
-   "options": "User"
+   "fieldname": "remarks",
+   "fieldtype": "Small Text",
+   "label": "Remarks"
   },
   {
-   "fieldname": "changed_on",
-   "fieldtype": "Datetime",
-   "label": "Changed on"
-  },
-  {
-   "fieldname": "reference_doctype",
-   "fieldtype": "Data",
-   "label": "Reference Doctype"
-  },
-  {
-   "fieldname": "reference_docname",
-   "fieldtype": "Data",
-   "label": "Reference DocName"
+   "fieldname": "changes_section",
+   "fieldtype": "Section Break",
+   "label": "Field Changes"
   },
   {
    "fieldname": "changes",
