@@ -96,7 +96,7 @@ class AssetReturn(Document):
 
         # Optional: if your BYT Asset doctype has fields for release/reset,
         # update them here. Keep this only if those fields actually exist.
-        status_of_asset = frappe.get.value("BYT Assset",self.asset,"status")
+        status_of_asset = frappe.get_value("BYT Assset",self.asset,"status")
         if status_of_asset != "Maintenance":
             
             frappe.db.set_value(
