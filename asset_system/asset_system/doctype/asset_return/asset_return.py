@@ -12,7 +12,7 @@ class AssetReturn(Document):
         assignment = self._get_assignment()
         self._validate_matches_assignment(assignment)
         self._validate_dates(assignment)
-        if self.workflow_state == "Assigned" and not self.assigned_to:
+        if self.status == "Assigned" and not self.assigned_to:
             frappe.throw("Assigned To is mandatory")
 
     def on_submit(self):

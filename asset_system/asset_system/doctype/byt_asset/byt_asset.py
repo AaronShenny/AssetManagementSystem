@@ -8,7 +8,7 @@ ALLOWED_TRANSITIONS = {
     "Available": ["In Use","Assigned", "Maintenance", "Scrapped","Deregistered"],
     "In Use": ["Available", "Maintenance"],
     "Assigned": ["Available", "Maintenance", "Scrapped"],
-    "Maintenance": ["Available", "In Use","Assigned", "Scrapped"],
+    "Maintenance": ["Available", "Assigned", "Scrapped"],
     "Deregistered": [],  # terminal state
     
 }
