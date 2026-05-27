@@ -8,6 +8,7 @@ from asset_system.asset_system.doctype.asset_assignment.helpers import has_activ
 from asset_system.utils.asset_history_service import create_asset_history
 
 
+# These values must stay in sync with Asset Issue.status options in asset_issue.json.
 ACTIVE_ISSUE_STATES = frozenset(
     {
         "Assigned",
@@ -103,10 +104,13 @@ class AssetIssue(Document):
             action_type="ISSUE RAISED",
             reference_doctype="Asset Issue",
             reference_docname=self.name,
-            remarks=f"Issue raised by {self.reported_by or frappe.session.user}.",
+            remarks=f"Issue raised by {self.reported_by}.",
         )
 
     def _record_issue_resolved(self):
+        if self.is_new():
+            return
+
         old_doc = self.get_doc_before_save()
         old_status = old_doc.get("status") if old_doc else None
         if old_status in RESTORE_STATES:

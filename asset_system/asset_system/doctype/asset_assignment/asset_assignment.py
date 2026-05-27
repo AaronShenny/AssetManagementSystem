@@ -47,6 +47,7 @@ class AssetAssignment(Document):
         if self.is_new():
             return True
 
+        # Test mocks may instantiate documents without full frappe Document helpers.
         if not callable(getattr(self, "has_value_changed", None)):
             return True
 
@@ -64,12 +65,13 @@ class AssetAssignment(Document):
 
     def _unassign_asset(self):
         """On cancel, clear Asset.assigned_to and set status to Available."""
-        frappe.db.set_value("BYT Asset", self.asset, {
-            "assigned_to": None,
-            "status": "Available",
-        })
+        current_status = frappe.db.get_value("BYT Asset", self.asset, "status")
+        update_values = {"assigned_to": None}
+        if current_status not in ("Maintenance", "Deregistered"):
+            update_values["status"] = "Available"
+        frappe.db.set_value("BYT Asset", self.asset, update_values)
     def _assign_asset(self):
-        """On submit, update Asset.assigned_to and set status to In Use."""
+        """Update Asset.assigned_to and keep status aligned with assignment activity."""
         asset_doc = frappe.get_doc("BYT Asset", self.asset)
 
         if not self.is_active:
