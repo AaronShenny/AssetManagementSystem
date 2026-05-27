@@ -34,11 +34,11 @@ class AssetAssignment(Document):
     def _validate_asset_available(self):
         """Prevent assigning an unavailable asset."""
         status = frappe.db.get_value("BYT Asset", self.asset, "status")
-        if status == "Deregistered":
+        if status in ("Deregistered", "Scrapped"):
             frappe.throw(
                 _("Asset {0} is deregistered and cannot be assigned.").format(self.asset)
             )
-        if status in ("Assigned", "Maintenance"):
+        if status in ("Assigned", "Maintenance", "In Use"):
             frappe.throw(
                 _("Asset {0} is not available for assignment.").format(self.asset)
             )

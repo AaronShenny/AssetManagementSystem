@@ -145,8 +145,8 @@ def move_asset(
 
     asset_doc = _get_asset_or_throw(asset)
 
-    if asset_doc.status == "Scrapped":
-        frappe.throw(_("Asset {0} is Scrapped and cannot be moved.").format(asset))
+    if asset_doc.status in ("Deregistered", "Scrapped"):
+        frappe.throw(_("Asset {0} is deregistered and cannot be moved.").format(asset))
 
     movement = frappe.get_doc(
         {
@@ -192,8 +192,8 @@ def assign_asset(
 
     asset_doc = _get_asset_or_throw(asset)
 
-    if asset_doc.status == "Scrapped":
-        frappe.throw(_("Asset {0} is Scrapped and cannot be assigned.").format(asset))
+    if asset_doc.status in ("Deregistered", "Scrapped"):
+        frappe.throw(_("Asset {0} is deregistered and cannot be assigned.").format(asset))
 
     assignment = frappe.get_doc(
         {
@@ -344,20 +344,23 @@ def get_dashboard_stats() -> dict:
     """Return summary statistics for the Asset dashboard.
 
     Returns:
-        dict with total, available, in_use, maintenance, scrapped counts.
+        dict with total, available, assigned, maintenance, deregistered counts.
     """
     total = frappe.db.count("BYT Asset")
     available = frappe.db.count("BYT Asset", {"status": "Available"})
-    in_use = frappe.db.count("BYT Asset", {"status": "In Use"})
+    assigned = frappe.db.count("BYT Asset", {"status": ["in", ["Assigned", "In Use"]]})
     maintenance = frappe.db.count("BYT Asset", {"status": "Maintenance"})
-    scrapped = frappe.db.count("BYT Asset", {"status": "Scrapped"})
+    deregistered = frappe.db.count("BYT Asset", {"status": ["in", ["Deregistered", "Scrapped"]]})
 
     return {
         "total": total,
         "available": available,
-        "in_use": in_use,
+        "assigned": assigned,
         "maintenance": maintenance,
-        "scrapped": scrapped,
+        "deregistered": deregistered,
+        # backward-compatible aliases for older consumers
+        "in_use": assigned,
+        "scrapped": deregistered,
     }
 
 

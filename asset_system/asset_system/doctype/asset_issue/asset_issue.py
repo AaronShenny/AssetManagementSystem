@@ -18,6 +18,7 @@ ACTIVE_ISSUE_STATES = frozenset(
     }
 )
 RESTORE_STATES = frozenset({"Resolved", "Closed"})
+ALLOWED_REPORTER_ROLES = frozenset({"Employee", "System Manager", "Infra Executive"})
 
 
 class AssetIssue(Document):
@@ -30,11 +31,13 @@ class AssetIssue(Document):
         self._apply_issue_state()
 
     def on_update(self):
+        self._record_issue_status_change()
         self._apply_issue_state()
 
     def _validate_reporter_role(self):
-        if "Employee" not in frappe.get_roles(frappe.session.user):
-            frappe.throw(_("Only Employees can raise Asset Issues."))
+        user_roles = set(frappe.get_roles(frappe.session.user))
+        if not ALLOWED_REPORTER_ROLES.intersection(user_roles):
+            frappe.throw(_("Only Employee, System Manager, or Infra Executive can raise Asset Issues."))
 
     def _apply_issue_state(self):
         if not self.asset:
@@ -108,11 +111,9 @@ class AssetIssue(Document):
         )
 
     def _record_issue_resolved(self):
-        if self.is_new():
+        old_status, new_status = self._get_status_change()
+        if old_status is None:
             return
-
-        old_doc = self.get_doc_before_save()
-        old_status = old_doc.get("status") if old_doc else None
         if old_status in RESTORE_STATES:
             return
 
@@ -121,6 +122,32 @@ class AssetIssue(Document):
             action_type="ISSUE RESOLVED",
             reference_doctype="Asset Issue",
             reference_docname=self.name,
-            remarks=f"Issue moved to {self.status}.",
-            changes=[{"field_name": "Issue Status", "old_data": old_status or "", "new_data": self.status or ""}],
+            remarks=f"Issue moved to {new_status}.",
+            changes=[{"field_name": "Issue Status", "old_data": old_status or "", "new_data": new_status or ""}],
         )
+
+    def _record_issue_status_change(self):
+        old_status, new_status = self._get_status_change()
+        if old_status is None or new_status in RESTORE_STATES:
+            return
+
+        create_asset_history(
+            asset=self.asset,
+            action_type="UPDATED",
+            reference_doctype="Asset Issue",
+            reference_docname=self.name,
+            remarks=f"Issue status changed to {new_status}.",
+            changes=[{"field_name": "Issue Status", "old_data": old_status or "", "new_data": new_status or ""}],
+        )
+
+    def _get_status_change(self):
+        if self.is_new():
+            return None, None
+
+        old_doc = self.get_doc_before_save()
+        old_status = old_doc.get("status") if old_doc else None
+        new_status = self.status
+        if old_status == new_status:
+            return None, None
+
+        return old_status, new_status

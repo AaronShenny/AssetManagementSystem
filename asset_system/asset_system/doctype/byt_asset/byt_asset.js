@@ -31,8 +31,8 @@ frappe.ui.form.on("BYT Asset", {
         // Colour indicators
         if (frm.doc.status === "Available") {
             frm.page.set_indicator(__("Available"), "green");
-        } else if (frm.doc.status === "In Use") {
-            frm.page.set_indicator(__("In Use"), "blue");
+        } else if (frm.doc.status === "Assigned") {
+            frm.page.set_indicator(__("Assigned"), "blue");
         } else if (frm.doc.status === "Maintenance") {
             frm.page.set_indicator(__("Maintenance"), "orange");
         } else if (frm.doc.status === "Deregistered") {
@@ -42,9 +42,9 @@ frappe.ui.form.on("BYT Asset", {
 
     assigned_to: function (frm) {
         if (frm.doc.assigned_to && frm.doc.status === "Available") {
-            frm.set_value("status", "In Use");
+            frm.set_value("status", "Assigned");
         }
-        if (!frm.doc.assigned_to && frm.doc.status === "In Use") {
+        if (!frm.doc.assigned_to && frm.doc.status === "Assigned") {
             frm.set_value("status", "Available");
         }
     }
