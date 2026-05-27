@@ -24,9 +24,14 @@ class AssetAssignmentService:
 
         status = AssetRepository.get_status(asset)
 
-        if status == "Scrapped":
+        if status in ("Deregistered", "Scrapped"):
             frappe.throw(
-                _("Asset {0} is Scrapped and cannot be assigned.")
+                _("Asset {0} is deregistered and cannot be assigned.")
+                .format(asset)
+            )
+        if status in ("Assigned", "Maintenance", "In Use"):
+            frappe.throw(
+                _("Asset {0} is not available for assignment.")
                 .format(asset)
             )
 

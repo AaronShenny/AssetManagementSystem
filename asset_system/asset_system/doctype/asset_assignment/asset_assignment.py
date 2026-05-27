@@ -2,11 +2,15 @@ import frappe
 from frappe import _
 from frappe.model.document import Document
 
+from .helpers import is_assignment_active_status
+
 
 class AssetAssignment(Document):
     def validate(self):
         self._validate_dates()
-        self._validate_asset_available()
+        if self._should_validate_asset_availability():
+            self._validate_asset_available()
+        self._sync_active_flag()
 
     def after_insert(self):
         self._assign_asset()
@@ -14,6 +18,7 @@ class AssetAssignment(Document):
         self._assign_asset()
 
     def on_trash(self):
+        self._deactivate_assignment()
         self._unassign_asset()
         self._record_deallocated_on_trash()
 
@@ -27,32 +32,53 @@ class AssetAssignment(Document):
                 frappe.throw(_("Return Date cannot be before Assigned Date."))
 
     def _validate_asset_available(self):
-        """Prevent assigning a Scrapped asset."""
+        """Prevent assigning an unavailable asset."""
         status = frappe.db.get_value("BYT Asset", self.asset, "status")
-        if status == "Deregistered" :
+        if status in ("Deregistered", "Scrapped"):
             frappe.throw(
-                _("Asset {0} is Scrapped and cannot be assigned.").format(self.asset)
+                _("Asset {0} is deregistered and cannot be assigned.").format(self.asset)
             )
-        if status == "In Use" or status == "Assigned":
+        if status in ("Assigned", "Maintenance", "In Use"):
             frappe.throw(
-                _("Asset {0} is in use and cannot be assigned. Unassign first").format(self.asset)
+                _("Asset {0} is not available for assignment.").format(self.asset)
             )
+
+    def _should_validate_asset_availability(self):
+        if self.is_new():
+            return True
+
+        # Test mocks may instantiate documents without full frappe Document helpers.
+        if not callable(getattr(self, "has_value_changed", None)):
+            return True
+
+        if self.has_value_changed("asset"):
+            return True
+
+        return self.has_value_changed("status") and is_assignment_active_status(self.status)
+
+    def _sync_active_flag(self):
+        self.is_active = 1 if is_assignment_active_status(self.status) else 0
+
+    def _deactivate_assignment(self):
+        if self.name and frappe.db.exists("Asset Assignment", self.name):
+            frappe.db.set_value("Asset Assignment", self.name, "is_active", 0, update_modified=False)
+
     def _unassign_asset(self):
         """On cancel, clear Asset.assigned_to and set status to Available."""
-        frappe.db.set_value("BYT Asset", self.asset, {
-            "assigned_to": None,
-            "status": "Available",
-        })
+        current_status = frappe.db.get_value("BYT Asset", self.asset, "status")
+        update_values = {"assigned_to": None}
+        if current_status not in ("Maintenance", "Deregistered"):
+            update_values["status"] = "Available"
+        frappe.db.set_value("BYT Asset", self.asset, update_values)
     def _assign_asset(self):
-        """On submit, update Asset.assigned_to and set status to In Use."""
+        """Update Asset.assigned_to and keep status aligned with assignment activity."""
         asset_doc = frappe.get_doc("BYT Asset", self.asset)
 
-        
-        if self.status in ['Off Board','Replacement','Damage','Other Reason']:
-            _unassign_asset(self)
+        if not self.is_active:
+            self._unassign_asset()
         else:
             asset_doc.assigned_to = self.assigned_to
-            asset_doc.status = self.status
+            asset_doc.status = "Assigned"
 
         asset_doc.save(ignore_permissions=True)
         #frappe.db.set_value("BYT Asset", self.asset, {

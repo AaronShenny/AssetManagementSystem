@@ -18,28 +18,28 @@ from unittest.mock import MagicMock, patch
 
 class TestAssetController(unittest.TestCase):
 
-    def test_allowed_transition_available_to_in_use(self):
-        """Available → In Use must be permitted."""
+    def test_allowed_transition_available_to_assigned(self):
+        """Available → Assigned must be permitted."""
         from asset_system.asset_system.doctype.byt_asset.byt_asset import ALLOWED_TRANSITIONS
-        self.assertIn("In Use", ALLOWED_TRANSITIONS["Available"])
+        self.assertIn("Assigned", ALLOWED_TRANSITIONS["Available"])
 
-    def test_disallowed_transition_scrapped_to_available(self):
-        """Scrapped state must have no allowed transitions (terminal)."""
+    def test_disallowed_transition_deregistered_to_available(self):
+        """Deregistered state must have no allowed transitions (terminal)."""
         from asset_system.asset_system.doctype.byt_asset.byt_asset import ALLOWED_TRANSITIONS
-        self.assertEqual(ALLOWED_TRANSITIONS["Scrapped"], [])
+        self.assertEqual(ALLOWED_TRANSITIONS["Deregistered"], [])
 
     def test_all_statuses_present_in_transitions(self):
         from asset_system.asset_system.doctype.byt_asset.byt_asset import ALLOWED_TRANSITIONS
-        for status in ("Available", "In Use", "Maintenance", "Scrapped"):
+        for status in ("Available", "Assigned", "Maintenance", "Deregistered"):
             self.assertIn(status, ALLOWED_TRANSITIONS)
 
     def test_maintenance_can_transition_to_available(self):
         from asset_system.asset_system.doctype.byt_asset.byt_asset import ALLOWED_TRANSITIONS
         self.assertIn("Available", ALLOWED_TRANSITIONS["Maintenance"])
 
-    def test_in_use_can_transition_to_scrapped(self):
+    def test_assigned_can_transition_to_deregistered(self):
         from asset_system.asset_system.doctype.byt_asset.byt_asset import ALLOWED_TRANSITIONS
-        self.assertIn("Scrapped", ALLOWED_TRANSITIONS["In Use"])
+        self.assertIn("Deregistered", ALLOWED_TRANSITIONS["Assigned"])
 
 
 # ---------------------------------------------------------------------------
@@ -94,7 +94,7 @@ class TestAssetMovementController(unittest.TestCase):
         doc.asset = "AST-0001"
 
         with self.assertRaises((ValueError, Exception)):
-            doc._validate_not_scrapped()
+            doc._validate_not_deregistered()
 
     def test_non_scrapped_asset_passes(self):
         """Available asset should not raise."""
@@ -107,7 +107,7 @@ class TestAssetMovementController(unittest.TestCase):
 
         doc = AssetMovement.__new__(AssetMovement)
         doc.asset = "AST-0001"
-        doc._validate_not_scrapped()
+        doc._validate_not_deregistered()
 
         mock_frappe.throw.assert_not_called()
         mock_frappe.throw = original_throw
@@ -241,7 +241,7 @@ class TestAssetAPI(unittest.TestCase):
         from asset_system.api.asset_api import get_dashboard_stats
 
         result = get_dashboard_stats()
-        for key in ("total", "available", "in_use", "maintenance", "scrapped"):
+        for key in ("total", "available", "assigned", "maintenance", "deregistered"):
             self.assertIn(key, result)
 
     def test_move_asset_missing_args_raises(self):

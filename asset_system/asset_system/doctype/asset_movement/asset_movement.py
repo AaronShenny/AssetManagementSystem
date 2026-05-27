@@ -5,7 +5,7 @@ from frappe.model.document import Document
 
 class AssetMovement(Document):
     def validate(self):
-        self._validate_not_scrapped()
+        self._validate_not_deregistered()
         self._validate_locations()
         self._set_moved_by()
 
@@ -17,11 +17,11 @@ class AssetMovement(Document):
     # Private helpers                                                      #
     # ------------------------------------------------------------------ #
 
-    def _validate_not_scrapped(self):
+    def _validate_not_deregistered(self):
         status = frappe.db.get_value("BYT Asset", self.asset, "status")
-        if status == "Scrapped":
+        if status in ("Deregistered", "Scrapped"):
             frappe.throw(
-                _("Asset {0} is Scrapped and cannot be moved.").format(self.asset)
+                _("Asset {0} is deregistered and cannot be moved.").format(self.asset)
             )
 
     def _validate_locations(self):

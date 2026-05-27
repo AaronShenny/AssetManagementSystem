@@ -10,6 +10,7 @@
   "assigned_date",
   "return_date",
   "status",
+  "is_active",
   "requires_manager_approval",
   "remarks",
   "amended_from",
@@ -75,6 +76,15 @@
    "fieldtype": "Select",
    "label": "Status",
    "options": "Assigned\nReturned\nReplacement\nOff Board"
+  },
+  {
+   "default": "1",
+   "fieldname": "is_active",
+   "fieldtype": "Check",
+   "hidden": 1,
+   "label": "Is Active",
+   "no_copy": 1,
+   "read_only": 1
   },
   {
    "default": "0",

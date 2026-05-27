@@ -88,6 +88,7 @@ class AssetReturn(Document):
             self.asset_assignment,
             {
                 "status": new_status,
+                "is_active": 0,
                 "return_date": self.returned_date,
                 "remarks": self.remarks or assignment.remarks,
             },
@@ -128,6 +129,7 @@ class AssetReturn(Document):
             self.asset_assignment,
             {
                 "status": "Assigned",
+                "is_active": 1,
                 "return_date": None,
             },
             update_modified=True,
