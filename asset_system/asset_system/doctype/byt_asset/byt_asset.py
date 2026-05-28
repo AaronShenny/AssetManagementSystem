@@ -1,7 +1,6 @@
 import frappe
 from frappe import _
 from frappe.model.document import Document
-from frappe.utils import nowdate
 
 from asset_system.asset_system.doctype.asset_assignment.helpers import (
     get_active_assignment,
@@ -94,7 +93,7 @@ class BYTAsset(Document):
                 "doctype": "Asset Assignment",
                 "asset": self.name,
                 "assigned_to": user,
-                "assigned_date": nowdate(),
+                "assigned_date": frappe.utils.nowdate(),
                 "status": "Assigned",
             }
         )
@@ -262,7 +261,7 @@ def _record_asset_update(doc):
         return
 
     # --- 5: Specification child-table changes --------------------------
-    spec_change= detect_child_table_changes(doc, old_doc, "specification")
+    spec_change = detect_child_table_changes(doc, old_doc, "specification")
     if spec_change:
         create_asset_history(
             asset=doc.name,
