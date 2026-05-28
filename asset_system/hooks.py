@@ -25,7 +25,10 @@ app_include_js = ["/assets/asset_system/js/asset_system.js"]
 # Fixtures – export these DocTypes when running bench export-fixtures
 # ------------------------------------------------------------------
 fixtures = [
-    {"dt": "Role", "filters": [["name", "in", ["Infra Admin", "Employee"]]]},
+    {
+        "dt": "Role",
+        "filters": [["name", "in", ["Infra Executive", "Infra Admin", "Leadership", "Employee"]]],
+    },
     {"dt": "Workspace", "filters": [["name", "in", ["Asset System"]]]},
 ]
 
