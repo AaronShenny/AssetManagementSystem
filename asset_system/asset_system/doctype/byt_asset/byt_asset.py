@@ -88,6 +88,13 @@ class BYTAsset(Document):
 
     @frappe.whitelist()
     def assign_asset(self, user):
+        existing = get_active_assignment(self.name)
+        if existing:
+            frappe.throw(
+                _("Asset '{0}' already has an active assignment. Unassign it before creating a new one.").format(
+                    self.name
+                )
+            )
         assignment = frappe.get_doc(
             {
                 "doctype": "Asset Assignment",
@@ -97,7 +104,7 @@ class BYTAsset(Document):
                 "status": "Assigned",
             }
         )
-        assignment.insert()
+        assignment.insert(ignore_permissions=True)
         return assignment
 
 
@@ -108,7 +115,7 @@ def has_permission(doc, user=None, permission_type=None):
     user = user or frappe.session.user
     roles = set(frappe.get_roles(user))
 
-    if roles.intersection({"Infra Admin", "Leadership"}):
+    if roles.intersection({"Infra Admin", "Infra Executive", "Leadership"}):
         return True
 
     if "Employee" in roles:
@@ -122,7 +129,7 @@ def get_permission_query_conditions(user):
         user = frappe.session.user
 
     roles = set(frappe.get_roles(user))
-    if roles.intersection({"Infra Admin", "Leadership"}):
+    if roles.intersection({"Infra Admin", "Infra Executive", "Leadership"}):
         return ""
 
     if "Employee" in roles:
