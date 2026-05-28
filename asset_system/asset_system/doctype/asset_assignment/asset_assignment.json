@@ -81,10 +81,8 @@
    "default": "1",
    "fieldname": "is_active",
    "fieldtype": "Check",
-   "hidden": 1,
    "label": "Is Active",
-   "no_copy": 1,
-   "read_only": 1
+   "no_copy": 1
   },
   {
    "default": "0",
@@ -97,7 +95,7 @@
  ],
  "icon": "fa fa-user",
  "links": [],
- "modified": "2026-05-26 10:50:41.249329",
+ "modified": "2026-05-27 17:38:16.119297",
  "modified_by": "Administrator",
  "module": "Asset System",
  "name": "Asset Assignment",

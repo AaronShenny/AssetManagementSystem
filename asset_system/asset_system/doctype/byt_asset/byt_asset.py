@@ -154,7 +154,7 @@ def has_permission(doc, user=None, permission_type=None):
         return True
 
     # Allow Asset Manager
-    if "Asset Manager" in frappe.get_roles(user):
+    if "Infra Admin" in frappe.get_roles(user):
         return True
 
     # Allow assigned Asset Employee
