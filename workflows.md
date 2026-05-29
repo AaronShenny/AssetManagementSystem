@@ -51,14 +51,14 @@ Sources used:
 
 | Current state | Action label | Next state | Allowed role(s) | Condition | Terminal? |
 |---|---|---|---|---|---|
-| Open | Assign | Assigned | Ambiguous (not defined in CSV/DocType metadata) | None defined | No |
-| Open | Close | Closed | Ambiguous (not defined in CSV/DocType metadata) | None defined | Yes (Closed has no actions) |
-| Assigned | Start Work | In Progress | Ambiguous (not defined in CSV/DocType metadata) | None defined | No |
-| In Progress | Send to IT | Waiting for IT | Ambiguous (not defined in CSV/DocType metadata) | None defined | No |
-| In Progress | Send to Vendor | Waiting for Vendor | Ambiguous (not defined in CSV/DocType metadata) | None defined | No |
-| Waiting for IT | Resolve | Resolved | Ambiguous (not defined in CSV/DocType metadata) | None defined | No |
-| Waiting for Vendor | Resolve | Resolved | Ambiguous (not defined in CSV/DocType metadata) | None defined | No |
-| Resolved | Close | Closed | Ambiguous (not defined in CSV/DocType metadata) | None defined | Yes (Closed has no actions) |
+| Open | Assign | Assigned | Ambiguous/TBD (resolve from `get_transitions`) | None defined | No |
+| Open | Close | Closed | Ambiguous/TBD (resolve from `get_transitions`) | None defined | Yes (Closed has no actions) |
+| Assigned | Start Work | In Progress | Ambiguous/TBD (resolve from `get_transitions`) | None defined | No |
+| In Progress | Send to IT | Waiting for IT | Ambiguous/TBD (resolve from `get_transitions`) | None defined | No |
+| In Progress | Send to Vendor | Waiting for Vendor | Ambiguous/TBD (resolve from `get_transitions`) | None defined | No |
+| Waiting for IT | Resolve | Resolved | Ambiguous/TBD (resolve from `get_transitions`) | None defined | No |
+| Waiting for Vendor | Resolve | Resolved | Ambiguous/TBD (resolve from `get_transitions`) | None defined | No |
+| Resolved | Close | Closed | Ambiguous/TBD (resolve from `get_transitions`) | None defined | Yes (Closed has no actions) |
 
 ### Canonical transition map (must match UI behavior)
 
@@ -77,7 +77,7 @@ Sources used:
 When user clicks **Assign**:
 
 1. Open popup/modal.
-2. Allow search/select of **User** record (`DocType: User`; requirement text refers to `Users`).
+2. Allow search/select of **User** record (`DocType: Users`).
 3. Save selected user into `assigned_to`.
 4. Apply workflow action `Assign` using `apply_workflow`.
 5. After success, reload document and workflow actions.
@@ -113,9 +113,9 @@ Important:
 
 | Current state | Action label | Next state | Allowed role(s) | Condition | Terminal? |
 |---|---|---|---|---|---|
-| Submitted | Approve | HOD Approved | Ambiguous (not defined in CSV/DocType metadata) | None defined | No |
-| HOD Approved | Issue Asset | Asset Issued | Ambiguous (not defined in CSV/DocType metadata) | None defined | No |
-| Asset Issued | Close | Closed | Ambiguous (not defined in CSV/DocType metadata) | None defined | Yes (Closed has no actions in CSV) |
+| Submitted | Approve | HOD Approved | Ambiguous/TBD (resolve from `get_transitions`) | None defined | No |
+| HOD Approved | Issue Asset | Asset Issued | Ambiguous/TBD (resolve from `get_transitions`) | None defined | No |
+| Asset Issued | Close | Closed | Ambiguous/TBD (resolve from `get_transitions`) | None defined | Yes (Closed has no actions in CSV) |
 
 ### Special UI behavior
 
