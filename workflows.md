@@ -2,11 +2,6 @@
 
 This document is the frontend reference for workflow-driven UI behavior.
 
-Sources used (paths relative to repository root):
-- `/workflow/1.csv` → Asset Issue
-- `/workflow/2.csv` → Asset Deregistration
-- DocType metadata for workflow state fields
-
 ## Global implementation rules
 
 - Keep workflow rendering dynamic.
