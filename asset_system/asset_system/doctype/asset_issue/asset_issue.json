@@ -10,6 +10,7 @@
   "issue_type",
   "priority",
   "description",
+  "vendor",
   "attachments",
   "reported_by",
   "reported_date",
@@ -23,6 +24,7 @@
   {
    "fieldname": "asset",
    "fieldtype": "Link",
+   "in_list_view": 1,
    "label": "Asset",
    "options": "BYT Asset",
    "reqd": 1
@@ -56,13 +58,13 @@
    "fieldtype": "Link",
    "label": "Reported By",
    "options": "User",
-   "permlevel": 1,
    "read_only": 1
   },
   {
    "fieldname": "reported_date",
-   "fieldtype": "Date",
-   "label": "Reported Date"
+   "fieldtype": "Datetime",
+   "label": "Reported Date",
+   "read_only": 1
   },
   {
    "default": "Open",
@@ -70,18 +72,21 @@
    "fieldtype": "Select",
    "hidden": 1,
    "label": "Status",
-   "options": "Open\nAssigned\nIn Progress\nWaiting for IT\nWaiting for Vendor\nResolved\nClosed"
+   "options": "Open\nAssigned\nIn Progress\nWaiting for IT\nWaiting for Vendor\nResolved\nClosed",
+   "read_only": 1
   },
   {
    "fieldname": "assigned_to",
    "fieldtype": "Link",
    "label": "Assigned to",
-   "options": "User"
+   "options": "User",
+   "permlevel": 1
   },
   {
    "fieldname": "resolution_notes",
    "fieldtype": "Text",
-   "label": "Resolution Notes"
+   "label": "Resolution Notes",
+   "permlevel": 1
   },
   {
    "fieldname": "closed_date",
@@ -92,13 +97,20 @@
    "fieldname": "workflow_state_1",
    "fieldtype": "Select",
    "label": "workflow_state",
+   "permlevel": 1,
    "read_only": 1
+  },
+  {
+   "fieldname": "vendor",
+   "fieldtype": "Link",
+   "label": "Vendor",
+   "options": "Vendor"
   }
  ],
  "grid_page_length": 50,
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2026-05-26 17:18:23.494802",
+ "modified": "2026-05-29 12:41:46.237472",
  "modified_by": "Administrator",
  "module": "Asset System",
  "name": "Asset Issue",

@@ -6,11 +6,12 @@
  "engine": "InnoDB",
  "field_order": [
   "asset_id",
+  "section_break_info",
   "asset_name",
   "serial_number",
-  "section_break_info",
   "category",
   "category_abbreviation",
+  "description",
   "managers_approval_needed",
   "status",
   "column_break_info",
@@ -19,8 +20,9 @@
   "section_break_purchase",
   "purchase_date",
   "purchase_value",
+  "vendor",
   "column_break_purchase",
-  "description",
+  "warrenty_expiry_date",
   "section_break_gosi",
   "specification",
   "section_break_qr",
@@ -51,7 +53,7 @@
   {
    "fieldname": "section_break_info",
    "fieldtype": "Section Break",
-   "label": "Asset Details"
+   "label": "Basic Informations"
   },
   {
    "fieldname": "category",
@@ -71,6 +73,7 @@
    "in_standard_filter": 1,
    "label": "Status",
    "options": "Available\nAssigned\nMaintenance\nDeregistered",
+   "read_only": 1,
    "reqd": 1
   },
   {
@@ -152,11 +155,22 @@
    "fieldtype": "Table",
    "label": "Attachments",
    "options": "Attachments"
+  },
+  {
+   "fieldname": "vendor",
+   "fieldtype": "Link",
+   "label": "Vendor",
+   "options": "Vendor"
+  },
+  {
+   "fieldname": "warrenty_expiry_date",
+   "fieldtype": "Date",
+   "label": "Warrenty Expiry Date"
   }
  ],
  "icon": "fa fa-desktop",
  "links": [],
- "modified": "2026-05-28 18:27:41.152863",
+ "modified": "2026-05-29 11:31:41.088577",
  "modified_by": "Administrator",
  "module": "Asset System",
  "name": "BYT Asset",

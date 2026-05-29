@@ -24,12 +24,15 @@ ALLOWED_REPORTER_ROLES = frozenset({"Employee", "System Manager", "Infra Executi
 class AssetIssue(Document):
     def before_insert(self):
         self._validate_reporter_role()
-        self.reported_by = frappe.session.user
+        self.reported_by = self.owner
+        self.reported_date = self.creation
+
+        
 
     def after_insert(self):
         self._record_issue_raised()
         self._apply_issue_state()
-
+        
     def on_update(self):
         self._record_issue_status_change()
         self._apply_issue_state()

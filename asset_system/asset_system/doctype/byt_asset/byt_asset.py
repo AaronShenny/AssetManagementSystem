@@ -134,6 +134,7 @@ def get_permission_query_conditions(user):
 
     if "Employee" in roles:
         escaped_user = frappe.db.escape(user)
+        print(escaped_user)
         return (
             "exists (select 1 from `tabAsset Assignment` aa "
             f"where aa.asset = `tabBYT Asset`.name and aa.assigned_to = {escaped_user} and aa.is_active = 1)"
