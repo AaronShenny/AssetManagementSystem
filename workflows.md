@@ -2,7 +2,7 @@
 
 This document is the frontend reference for workflow-driven UI behavior.
 
-Sources used:
+Sources used (paths relative to repository root):
 - `/workflow/1.csv` → Asset Issue
 - `/workflow/2.csv` → Asset Deregistration
 - DocType metadata for workflow state fields
@@ -51,14 +51,16 @@ Sources used:
 
 | Current state | Action label | Next state | Allowed role(s) | Condition | Terminal? |
 |---|---|---|---|---|---|
-| Open | Assign | Assigned | Runtime from `get_transitions` (CSV unclear/ambiguous) | Not defined in CSV | No |
-| Open | Close | Closed | Runtime from `get_transitions` (CSV unclear/ambiguous) | Not defined in CSV | Yes (Closed has no actions) |
-| Assigned | Start Work | In Progress | Runtime from `get_transitions` (CSV unclear/ambiguous) | Not defined in CSV | No |
-| In Progress | Send to IT | Waiting for IT | Runtime from `get_transitions` (CSV unclear/ambiguous) | Not defined in CSV | No |
-| In Progress | Send to Vendor | Waiting for Vendor | Runtime from `get_transitions` (CSV unclear/ambiguous) | Not defined in CSV | No |
-| Waiting for IT | Resolve | Resolved | Runtime from `get_transitions` (CSV unclear/ambiguous) | Not defined in CSV | No |
-| Waiting for Vendor | Resolve | Resolved | Runtime from `get_transitions` (CSV unclear/ambiguous) | Not defined in CSV | No |
-| Resolved | Close | Closed | Runtime from `get_transitions` (CSV unclear/ambiguous) | Not defined in CSV | Yes (Closed has no actions) |
+| Open | Assign | Assigned | See Note A | See Note A | No |
+| Open | Close | Closed | See Note A | See Note A | Yes (Closed has no actions) |
+| Assigned | Start Work | In Progress | See Note A | See Note A | No |
+| In Progress | Send to IT | Waiting for IT | See Note A | See Note A | No |
+| In Progress | Send to Vendor | Waiting for Vendor | See Note A | See Note A | No |
+| Waiting for IT | Resolve | Resolved | See Note A | See Note A | No |
+| Waiting for Vendor | Resolve | Resolved | See Note A | See Note A | No |
+| Resolved | Close | Closed | See Note A | See Note A | Yes (Closed has no actions) |
+
+**Note A:** Roles and conditions are not defined in provided CSV/DocType metadata. Resolve at runtime from `get_transitions` and backend permissions.
 
 ### Canonical transition map (must match UI behavior)
 
@@ -77,7 +79,7 @@ Sources used:
 When user clicks **Assign**:
 
 1. Open popup/modal.
-2. Allow search/select of **User** record (`DocType: User`; requirement text refers to `Users`).
+2. Allow search/select of **User** record (`DocType: Users`).
 3. Save selected user into `assigned_to`.
 4. Apply workflow action `Assign` using `apply_workflow`.
 5. After success, reload document and workflow actions.
@@ -113,9 +115,11 @@ Important:
 
 | Current state | Action label | Next state | Allowed role(s) | Condition | Terminal? |
 |---|---|---|---|---|---|
-| Submitted | Approve | HOD Approved | Runtime from `get_transitions` (CSV unclear/ambiguous) | Not defined in CSV | No |
-| HOD Approved | Issue Asset | Asset Issued | Runtime from `get_transitions` (CSV unclear/ambiguous) | Not defined in CSV | No |
-| Asset Issued | Close | Closed | Runtime from `get_transitions` (CSV unclear/ambiguous) | Not defined in CSV | Yes (Closed has no actions in CSV) |
+| Submitted | Approve | HOD Approved | See Note A | See Note A | No |
+| HOD Approved | Issue Asset | Asset Issued | See Note A | See Note A | No |
+| Asset Issued | Close | Closed | See Note A | See Note A | Yes (Closed has no actions in CSV) |
+
+**Note A:** Roles and conditions are not defined in provided CSV/DocType metadata. Resolve at runtime from `get_transitions` and backend permissions.
 
 ### Special UI behavior
 
