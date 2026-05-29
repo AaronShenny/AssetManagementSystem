@@ -1,180 +1,135 @@
-# Workflows Reference
+# Workflow UI Reference
 
-This reference summarizes the workflows exported from the `workflow/` CSV files for frontend UI development. Each workflow lists the state field, states, transitions, roles, conditions (if any), terminal transitions, and implementation notes.
+This document is the frontend reference for workflow-driven UI behavior.
 
----
+Sources used:
+- `/workflow/1.csv`
+- `/workflow/2.csv`
+- DocType metadata for workflow state fields
 
-## AD WORKFLOW2 — Asset Deregistration
+## Global implementation rules
 
-- **Document Type:** Asset Deregistration
-- **Workflow state field:** `status`
+- Keep workflow rendering dynamic.
+- Do not hardcode state/action rendering (except explicitly required special-action behavior).
+- Do not update `workflow_state_1` directly.
+- Use workflow APIs for transitions:
+  - `POST /api/method/frappe.model.workflow.get_transitions`
+  - `POST /api/method/frappe.model.workflow.apply_workflow`
+- After any successful action, refresh the document and fetch transitions again.
+- Backend permissions and workflow checks are the source of truth.
 
-### States
+## Dynamic UI implementation flow
 
-| State | Notes |
-|---|---|
-| Pending | Inferred as an initial state in the transitions; appears in transition rows as the current state |
-| Approved | Present as a documented state; no outgoing transitions visible in CSV extract (likely terminal) |
-| Clarification Required | Present |
-| Rejected | Present; appears to be final/terminal |
-
-### Terminal States
-
-- Rejected
-- Approved (unless future transitions are added)
-
-### Transitions
-
-| Current State | Action Label | Next State | Allowed Role(s) | Condition | Terminal |
-|---|---:|---|---|---|---:|
-| Pending | Review | Clarification Required | Leadership | (none specified) | No |
-| Pending | Reject | Rejected | Leadership | (none specified) | Yes (Rejected has no outgoing transitions in CSV) |
-| Pending | Approve | Approved | Leadership | (none specified) | Yes (Rejected has no outgoing transitions in CSV) |
-Notes:
-- The CSV export includes a large `Workflow Data` JSON (layout info) that was truncated in the export; that JSON lists additional state metadata but not needed for UI actions.
-- The mapping of flattened CSV columns makes it ambiguous which state some transitions are attached to; where possible above the current state was taken from the `State (Transitions)` column. If you need authoritative mapping, confirm against the backend workflow API or the workflow builder UI.
-- `Approved` is listed as a state but no outgoing transition rows were present in the CSV extract — treat it as terminal until confirmed otherwise.
-
-**API hints for frontend**
-- Read the `status` field to determine the current workflow state.
-- Workflow transitions must be executed through the workflow API; never directly update `status` to move a document between states.
-- Transition/action labels to display: `Review`, `Reject` (show only if user role includes `Leadership`).
+1. On page load, fetch the document and read current workflow state.
+2. Call `get_transitions` for available actions.
+3. Render action buttons dynamically from backend transitions.
+4. For normal actions, call `apply_workflow` directly.
+5. For special actions (Asset Issue `Assign`), run action-specific UI behavior first.
+6. After success, reload document + transitions.
 
 ---
 
-## AD WORKFLOW 2 — Asset Issue (Canonical)
+## 1) Asset Issue
 
-- **Document Type:** Asset Issue
+- **Workflow name:** Asset Issue
+- **Document type:** `Asset Issue`
 - **Workflow state field:** `workflow_state_1`
 
-Canonical / Source of Truth: the following workflow is the authoritative definition for UI generation, API integration, and state-based action rendering. Do not infer transitions separately — use this definition.
+### All states
 
-Workflow flow (canonical):
+| State |
+|---|
+| Open |
+| Assigned |
+| In Progress |
+| Waiting for IT |
+| Waiting for Vendor |
+| Resolved |
+| Closed |
 
-Open
-├── Assign → Assigned
-└── Close → Closed
+### All transitions
 
-Assigned
-└── Start Work → In Progress
+| Current state | Action label | Next state | Allowed role(s) | Condition | Terminal? |
+|---|---|---|---|---|---|
+| Open | Assign | Assigned | Ambiguous (not defined in CSV/DocType metadata) | None defined | No |
+| Open | Close | Closed | Ambiguous (not defined in CSV/DocType metadata) | None defined | Yes (Closed has no actions) |
+| Assigned | Start Work | In Progress | Ambiguous (not defined in CSV/DocType metadata) | None defined | No |
+| In Progress | Send to IT | Waiting for IT | Ambiguous (not defined in CSV/DocType metadata) | None defined | No |
+| In Progress | Send to Vendor | Waiting for Vendor | Ambiguous (not defined in CSV/DocType metadata) | None defined | No |
+| Waiting for IT | Resolve | Resolved | Ambiguous (not defined in CSV/DocType metadata) | None defined | No |
+| Waiting for Vendor | Resolve | Resolved | Ambiguous (not defined in CSV/DocType metadata) | None defined | No |
+| Resolved | Close | Closed | Ambiguous (not defined in CSV/DocType metadata) | None defined | Yes (Closed has no actions) |
 
-In Progress
-├── Send to IT → Waiting for IT
-└── Send to Vendor → Waiting for Vendor
+### Canonical transition map (must match UI behavior)
 
-Waiting for IT
-└── Resolve → Resolved
+- Open → Assign → Assigned
+- Open → Close → Closed
+- Assigned → Start Work → In Progress
+- In Progress → Send to IT → Waiting for IT
+- In Progress → Send to Vendor → Waiting for Vendor
+- Waiting for IT → Resolve → Resolved
+- Waiting for Vendor → Resolve → Resolved
+- Resolved → Close → Closed
+- Closed → No actions
 
-Waiting for Vendor
-└── Resolve → Resolved
+### Special UI behavior (Asset Issue: `Assign`)
 
-Resolved
-└── Close → Closed
+When user clicks **Assign**:
 
-Closed
-└── No further actions (Terminal State)
+1. Open popup/modal.
+2. Allow search/select of **User** record (`Doctype: Users`).
+3. Save selected user into `assigned_to`.
+4. Apply workflow action `Assign` using `apply_workflow`.
+5. After success, reload document and workflow actions.
 
-### Rules (UI / API)
+Important:
+- `assigned_to` is business data, not workflow state.
+- Do not update `workflow_state_1` directly.
 
-- `Closed` is a terminal state; no actions should be shown when a document is in `Closed`.
-- An issue may be closed directly from `Open` using the `Close` action (for invalid/duplicate/cancelled issues).
-- Only show actions reachable from the current state; never show actions that are not directly defined as outgoing from the current state.
-- Use this workflow as the source of truth; do not infer additional transitions from CSV exports.
+### Important implementation notes
 
-### Terminal States
-
-- Closed
-
-### Expected UI Actions by State
-
-| State | Actions (ordered) |
-|---|---|
-| Open | Assign, Close |
-| Assigned | Start Work |
-| In Progress | Send to IT, Send to Vendor |
-| Waiting for IT | Resolve |
-| Waiting for Vendor | Resolve |
-| Resolved | Close |
-| Closed | (none) |
-
-### Transitions (for implementation)
-
-| Current State | Action Label | Next State | Role | Notes |
-|---|---:|---|---|---|
-| Open | Assign | Assigned | Infra Executive | Typical path for valid issues |
-| Open | Close | Closed | Infra Executive | Direct close for invalid/duplicate/cancelled issues |
-| Assigned | Start Work | In Progress | Infra Executive | |
-| In Progress | Send to IT | Waiting for IT | Infra Executive | |
-| In Progress | Send to Vendor | Waiting for Vendor | Infra Executive | |
-| Waiting for IT | Resolve | Resolved | Infra Executive | |
-| Waiting for Vendor | Resolve | Resolved | Infra Executive | |
-| Resolved | Close | Closed | Infra Executive | Terminal transition |
-
-### API & UI integration hints
-
-- Read `workflow_state_1` to determine the current workflow state.
-- Workflow transitions must be executed through the workflow API. Never directly update `workflow_state_1` to move a document between states.
-- The backend should expose available transitions for the current user/document. If it does not, the frontend may compute available actions by matching the user's roles against transition `Allowed` values, but the backend remains the source of truth for permissions.
-- When rendering buttons, label them with the `Action Label` (e.g., `Start Work`, `Send to IT`). On click, call the workflow transition API with the action identifier; after a successful transition, reload the document to get the updated `workflow_state_1` value from the server.
-
-- The frontend should fetch available actions using `get_transitions`.
-- The frontend should render action buttons based on the returned actions (do not hard-code actions client-side).
-- The frontend should execute transitions using `apply_workflow` (server API) rather than mutating state fields.
-- After a successful transition, reload the document to obtain the updated workflow state.
-- Treat the workflow definition in this document as documentation; the backend remains the source of truth for permissions and which actions are actually available to the current user.
-
-### Notes
-
-- This section replaces the CSV-derived interpretation. Treat this canonical listing as authoritative for all UI and API work.
-
-## Workflow APIs
-
-### Get Available Actions
-
-Endpoint:
-
-POST /api/method/frappe.model.workflow.get_transitions
-
-Request:
-
-{
-  "doc": {
-    "doctype": "Asset Issue",
-    "name": "<document_name>"
-  }
-}
-
-Purpose:
-Returns the workflow actions available to the current user for the current document state.
-
-### Apply Workflow Action
-
-Endpoint:
-
-POST /api/method/frappe.model.workflow.apply_workflow
-
-Request:
-
-{
-  "doc": {
-    "doctype": "Asset Issue",
-    "name": "<document_name>"
-  },
-  "action": "<action_name>"
-}
-
-Purpose:
-Executes a workflow transition and updates the document's workflow state.
+- Keep actions dynamic from `get_transitions`.
+- Do not add inferred transitions not present in canonical definition.
+- Treat role/condition enforcement as backend-driven.
 
 ---
 
-## Global notes & recommendations
+## 2) Asset Deregistration
 
-- The CSVs are flattened exports from a workflow builder and include layout metadata which was truncated in this extraction. For authoritative, up-to-date transition metadata (roles, conditions, allow-self-approval flags), call the server-side workflow endpoint or inspect the workflow via the builder UI.
-- For UI behavior:
-  - Query the backend for available transitions for the current user/document (server should return only those allowed). If the backend does not filter, the frontend should compute visibility by matching the user's roles against `Allowed Role(s)`.
-  - Render action buttons using the `Action (Transitions)` label; on click, call the workflow API to perform the transition (e.g., `apply_workflow`) and then reload the document to obtain the updated workflow state rather than attempting to write state fields directly.
+- **Workflow name:** Asset Deregistration
+- **Document type:** `Asset Deregistration`
+- **Workflow state field:** `workflow_state_1`
 
-If you want, I can:
-- Attempt a second-pass parse that reconstructs the full JSON `Workflow Data` (requires the original un-truncated CSV export), or
-- Generate a small JSON file mapping states → actions for each workflow for direct use in UI storybook/mock data.
+### All states
+
+| State |
+|---|
+| Submitted |
+| HOD Approved |
+| Asset Issued |
+| Closed |
+
+### All transitions
+
+| Current state | Action label | Next state | Allowed role(s) | Condition | Terminal? |
+|---|---|---|---|---|---|
+| Submitted | Approve | HOD Approved | Ambiguous (not defined in CSV/DocType metadata) | None defined | No |
+| HOD Approved | Issue Asset | Asset Issued | Ambiguous (not defined in CSV/DocType metadata) | None defined | No |
+| Asset Issued | Close | Closed | Ambiguous (not defined in CSV/DocType metadata) | None defined | Yes (Closed has no actions in CSV) |
+
+### Special UI behavior
+
+- No action-specific special UI behavior defined in available source files.
+
+### Important implementation notes
+
+- Roles/conditions are not explicit in provided CSVs; mark as ambiguous until verified from actual Frappe Workflow records/API.
+- Do not guess additional transitions.
+
+---
+
+## 3) Other workflows found in `/workflow`
+
+No additional workflows found beyond:
+- `workflow/1.csv` (Asset Issue)
+- `workflow/2.csv` (Asset Deregistration)
