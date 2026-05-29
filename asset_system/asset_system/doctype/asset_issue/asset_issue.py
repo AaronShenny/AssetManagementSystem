@@ -18,7 +18,7 @@ ACTIVE_ISSUE_STATES = frozenset(
     }
 )
 RESTORE_STATES = frozenset({"Resolved", "Closed"})
-ALLOWED_REPORTER_ROLES = frozenset({"Employee", "System Manager", "Infra Executive"})
+ALLOWED_REPORTER_ROLES = frozenset({"Employee", "System Manager"})
 
 
 class AssetIssue(Document):
@@ -40,7 +40,7 @@ class AssetIssue(Document):
     def _validate_reporter_role(self):
         user_roles = set(frappe.get_roles(frappe.session.user))
         if not ALLOWED_REPORTER_ROLES.intersection(user_roles):
-            frappe.throw(_("Only Employee, System Manager, or Infra Executive can raise Asset Issues."))
+            frappe.throw(_("Only Employees can raise Asset Issues."))
 
     def _apply_issue_state(self):
         if not self.asset:
@@ -73,7 +73,7 @@ class AssetIssue(Document):
         if current_asset_status == "Deregistered":
             return
 
-        if self._has_other_active_issues():
+        if self._has_other_active_issues():  #checking if the asset has any other active issues
             return
 
         target_status = "Assigned" if has_active_assignment(self.asset) else "Available"
