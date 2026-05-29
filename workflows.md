@@ -77,7 +77,7 @@ Sources used:
 When user clicks **Assign**:
 
 1. Open popup/modal.
-2. Allow search/select of **User** record (`Doctype: Users`).
+2. Allow search/select of **User** record (`Doctype: User`; requirement text refers to `Users`).
 3. Save selected user into `assigned_to`.
 4. Apply workflow action `Assign` using `apply_workflow`.
 5. After success, reload document and workflow actions.
