@@ -79,7 +79,7 @@ Sources used (paths relative to repository root):
 When user clicks **Assign**:
 
 1. Open popup/modal.
-2. Allow search/select of **User** record (`DocType: Users`).
+2. Allow search/select of **User** record (`DocType: User`).
 3. Save selected user into `assigned_to`.
 4. Apply workflow action `Assign` using `apply_workflow`.
 5. After success, reload document and workflow actions.
