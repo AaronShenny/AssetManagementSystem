@@ -106,7 +106,7 @@ class BYTAsset(Document):
         )
         assignment.insert(ignore_permissions=True)
         return assignment
-
+    
 
 # ------------------------------------------------------------------ #
 # Module-level functions wired via hooks.py doc_events                #

@@ -70,7 +70,6 @@
    "default": "Open",
    "fieldname": "status",
    "fieldtype": "Select",
-   "hidden": 1,
    "label": "Status",
    "options": "Open\nAssigned\nIn Progress\nWaiting for IT\nWaiting for Vendor\nResolved\nClosed",
    "read_only": 1
@@ -104,13 +103,14 @@
    "fieldname": "vendor",
    "fieldtype": "Link",
    "label": "Vendor",
-   "options": "Vendor"
+   "options": "Vendor",
+   "permlevel": 1
   }
  ],
  "grid_page_length": 50,
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2026-05-29 12:41:46.237472",
+ "modified": "2026-05-30 13:28:29.931873",
  "modified_by": "Administrator",
  "module": "Asset System",
  "name": "Asset Issue",

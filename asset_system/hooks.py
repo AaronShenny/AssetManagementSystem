@@ -40,14 +40,20 @@ doc_events = {
         "before_insert": "asset_system.asset_system.doctype.byt_asset.byt_asset.before_insert",
         "validate": "asset_system.asset_system.doctype.byt_asset.byt_asset.validate",
     },
+    
+    "User": {
+        "after_insert": "asset_system.asset_system.user_hooks.assign_default_role"
+    }
 
    
 }
 permission_query_conditions = {
-    "BYT Asset": "asset_system.asset_system.doctype.byt_asset.byt_asset.get_permission_query_conditions"
+    "BYT Asset": "asset_system.asset_system.doctype.byt_asset.byt_asset.get_permission_query_conditions",
+    "Asset Issue": "asset_system.asset_system.doctype.asset_issue.asset_issue.get_permission_query_conditions"
 }
 has_permission = {
     "BYT Asset": "asset_system.asset_system.doctype.byt_asset.byt_asset.has_permission"
+    
 }
 # ------------------------------------------------------------------
 # Scheduled tasks

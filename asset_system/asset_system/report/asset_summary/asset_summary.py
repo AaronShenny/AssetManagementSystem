@@ -19,9 +19,10 @@ def execute(filters=None):
 
     data = [
         ["Total Assets", frappe.db.count("BYT Asset")],
-        ["Allocated Assets", frappe.db.count("BYT Asset", {"status": "Allocated"})],
-        ["Maintenance Assets", frappe.db.count("BYT Asset", {"status": "Maintenance"})],
-        ["Deregistered Assets", frappe.db.count("BYT Asset", {"status": "Deregistered"})],
+        ["Allocated", frappe.db.count("BYT Asset", {"status": "Assigned"})],
+        ["Available", frappe.db.count("BYT Asset", {"status": "Available"})],
+        ["Under Maintenance", frappe.db.count("BYT Asset", {"status": "Maintenance"})],
+        ["Deregistered", frappe.db.count("BYT Asset", {"status": "Deregistered"})],
     ]
 
     return columns, data

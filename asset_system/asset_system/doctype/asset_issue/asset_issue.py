@@ -154,3 +154,21 @@ class AssetIssue(Document):
             return None, None
 
         return old_status, new_status
+
+
+def get_permission_query_conditions(user):
+
+    if not user:
+        user = frappe.session.user
+
+    roles = set(frappe.get_roles(user))
+    if roles.intersection({"Infra Admin", "Infra Executive", "Leadership"}):
+        return ""
+
+    if "Employee" in roles:
+        escaped_user = frappe.db.escape(user)
+        print(escaped_user)
+        return (
+            "exists (select 1 from `tabAsset Assignment` aa "
+            f"where aa.asset = `tabAsset Issue`.asset and aa.assigned_to = {escaped_user} and aa.is_active = 1)"
+        )

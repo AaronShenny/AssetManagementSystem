@@ -642,6 +642,8 @@ def get_doctype_meta(doctype: str):
     if not doctype:
         frappe.throw(_("doctype is required"))
     meta = frappe.get_meta(doctype)
+    
+    
     return {
         "fields": [
             {
@@ -657,7 +659,7 @@ def get_doctype_meta(doctype: str):
             }
             for f in meta.fields
         ]
-    }
+}
 
 
 @frappe.whitelist()
@@ -944,3 +946,138 @@ def get_filtered_doctype_list(
     params = parent_params + child_params + [int(limit_page_length), int(limit_start)]
     results = frappe.db.sql(sql, params, as_dict=True)
     return {"data": results}
+
+
+@frappe.whitelist()
+def check_permission(doctype, ptype="read"):
+    return frappe.has_permission(
+        doctype=doctype,
+        ptype=ptype
+    )
+@frappe.whitelist()
+
+def get_my_assets():
+    user = frappe.session.user
+
+    return frappe.db.sql(
+        """
+        SELECT a.*
+        FROM `tabBYT Asset` a
+        WHERE EXISTS (
+            SELECT 1
+            FROM `tabAsset Assignment` aa
+            WHERE aa.asset = a.name
+              AND aa.assigned_to = %(user)s
+              AND aa.is_active = 1
+        )
+        """,
+        {"user": user},
+        as_dict=True,
+    )
+
+
+import frappe
+from frappe import _
+
+
+def get_doctype_filter(doctype, asset, limit=5, extra_filters=None, fields=None, order_by=None):
+    """
+    Generic helper to fetch related records for one asset.
+    """
+    if not doctype:
+        frappe.throw(_("doctype is required"))
+
+    if not asset:
+        frappe.throw(_("asset is required"))
+
+    filters = {"asset": asset}
+    if extra_filters:
+        filters.update(extra_filters)
+
+    if fields is None:
+        fields = ["name", "asset", "status", "modified"]
+
+    if not order_by:
+        order_by = "modified desc"
+
+    return frappe.get_all(
+        doctype,
+        filters=filters,
+        fields=fields,
+        limit_page_length=limit,
+        order_by=order_by,
+    )
+
+
+@frappe.whitelist()
+def get_asset_overview(asset):
+    """
+    Returns a summary view for the asset details page.
+    """
+    if not asset:
+        frappe.throw(_("asset is required"))
+
+    asset_doc = frappe.get_doc("BYT Asset", asset)
+
+    recent_history = get_doctype_filter(
+        doctype="Asset History",
+        asset=asset,
+        limit=5,
+        fields=[
+            "name",
+            "asset",
+            "status",
+            "changed_by",
+            "changed_on",
+            "reference_doctype",
+            "reference_docname",
+            "remarks",
+        ],
+        order_by="changed_on desc",
+    )
+
+    recent_issues = get_doctype_filter(
+        doctype="Asset Issue",
+        asset=asset,
+        limit=5,
+        fields=[
+            "name",
+            "asset",
+            "issue_type",
+            "priority",
+            "status",
+            "assigned_to",
+            "reported_by",
+            "reported_date",
+            "closed_date",
+        ],
+        order_by="reported_date desc",
+    )
+
+    recent_assignments = get_doctype_filter(
+        doctype="Asset Assignment",
+        asset=asset,
+        limit=5,
+        fields=[
+            "name",
+            "asset",
+            "assigned_to",
+            "assigned_date",
+            "return_date",
+            "status",
+            "is_active",
+        ],
+        order_by="assigned_date desc",
+    )
+
+    return {
+        "asset": asset_doc,
+        "recent_history": recent_history,
+        "recent_issues": recent_issues,
+        "recent_assignments": recent_assignments,
+        "counts": {
+            "history": frappe.db.count("Asset History", {"asset": asset}),
+            "issues": frappe.db.count("Asset Issue", {"asset": asset}),
+            "assignments": frappe.db.count("Asset Assignment", {"asset": asset}),
+        },
+    }
