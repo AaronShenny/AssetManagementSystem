@@ -22,7 +22,7 @@
   "purchase_value",
   "vendor",
   "column_break_purchase",
-  "warrenty_expiry_date",
+  "warranty_expiry_date",
   "section_break_gosi",
   "specification",
   "section_break_qr",
@@ -147,7 +147,6 @@
    "fetch_from": "category.manager_approval_needed",
    "fieldname": "managers_approval_needed",
    "fieldtype": "Check",
-   "hidden": 1,
    "label": "Manager's Approval Needed?"
   },
   {
@@ -163,14 +162,14 @@
    "options": "Vendor"
   },
   {
-   "fieldname": "warrenty_expiry_date",
+   "fieldname": "warranty_expiry_date",
    "fieldtype": "Date",
-   "label": "Warrenty Expiry Date"
+   "label": "Warranty Expiry Date"
   }
  ],
  "icon": "fa fa-desktop",
  "links": [],
- "modified": "2026-05-29 11:31:41.088577",
+ "modified": "2026-06-04 11:20:23.943401",
  "modified_by": "Administrator",
  "module": "Asset System",
  "name": "BYT Asset",

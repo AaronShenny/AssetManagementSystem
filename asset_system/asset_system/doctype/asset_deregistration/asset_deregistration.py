@@ -5,8 +5,19 @@ import frappe
 from frappe.model.document import Document
 
 class AssetDeregistration(Document):
+    def before_save(self):
+        asset = frappe.get_doc("BYT Asset", self.asset)
+        if asset.status == "Deregistered":
+            frappe.throw(
+                f"Asset {asset.name} is already deregistered"
 
-    def on_submit(self):
+            )
+        if asset.status=="Assigned":
+            frappe.throw(
+                f"Asset {asset.name} is currently assigned to {asset.assigned_to}. "
+                "Please deallocate the asset before deregistering it."
+            )
+    def after_insert(self):
         self._record_deregistration_request()
 
     def on_update(self):
@@ -25,11 +36,13 @@ class AssetDeregistration(Document):
         from asset_system.utils.asset_history_service import create_asset_history
 
         asset = frappe.get_doc("BYT Asset", self.asset)
-        if asset.status != "Deregistered":
-            asset.status = "Deregistered"
-            asset.save(ignore_permissions=True)
-
-        # Record the approval event on the deregistration document itself
+        
+        # Prevent deregistration of assigned assets
+        if asset.status=="Assigned":
+            frappe.throw(
+                f"Asset {asset.name} is currently assigned to {asset.assigned_to}. "
+                "Please deallocate the asset before deregistering it."
+            )
         create_asset_history(
             asset=self.asset,
             action_type="DEREGISTRATION APPROVED",
@@ -37,11 +50,22 @@ class AssetDeregistration(Document):
             reference_docname=self.name,
             remarks=f"Deregistration approved. Reason: {self.reason or 'N/A'}.",
         )
+        if asset.status != "Deregistered":
+            asset.status = "Deregistered"
+            asset.save(ignore_permissions=True)
+
+        
 
     def _record_deregistration_request(self):
         """Record that a deregistration request was submitted."""
+        asset = frappe.get_doc("BYT Asset", self.asset)
         from asset_system.utils.asset_history_service import create_asset_history
-
+        if asset.status=="Assigned":
+            frappe.throw(
+                f"Asset {asset.name} is currently assigned to {asset.assigned_to}. "
+                "Please deallocate the asset before deregistering it."
+            )
+        
         create_asset_history(
             asset=self.asset,
             action_type="DEREGISTRATION REQUEST",

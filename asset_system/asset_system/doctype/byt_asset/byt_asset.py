@@ -10,7 +10,7 @@ from asset_system.asset_system.doctype.asset_assignment.helpers import (
 # Status transition rules
 ALLOWED_TRANSITIONS = {
     "Available": ["Assigned", "Maintenance", "Deregistered"],
-    "Assigned": ["Available", "Maintenance", "Deregistered"],
+    "Assigned": ["Available", "Maintenance"],
     "Maintenance": ["Available", "Assigned", "Deregistered"],
     "Deregistered": [],  # terminal state
     
@@ -235,7 +235,7 @@ def _record_asset_update(doc):
         if new_status == "Deregistered":
             create_asset_history(
                 asset=doc.name,
-                action_type="DEREGISTERED",
+                action_type="DEREGISTERED in Asset page",
                 reference_doctype="BYT Asset",
                 reference_docname=doc.name,
                 changes=[

@@ -597,7 +597,7 @@ def search_link_options(doctype, txt=""):
             fields=["name"],
             limit=20
         )
-ALLOWED_FILTER_OPERATORS = {"=", "!=", "<", ">", "<=", ">=", "like", "in", "between"}
+ALLOWED_FILTER_OPERATORS = {"=", "!=", "<", ">", "<=", ">=", "like", "in", "between", "is"}
 
 
 def _parse_json(value, fallback):
@@ -634,6 +634,13 @@ def _build_condition(field_sql: str, operator: str, value) -> Tuple[str, List]:
         return f"{field_sql} IN ({', '.join(['%s'] * len(values))})", list(values)
     if operator == "like":
         return f"{field_sql} LIKE %s", [f"%{value}%"]
+    if operator == "is":
+        val_str = str(value).lower().strip()
+        if val_str == "set":
+            return f"{field_sql} IS NOT NULL", []
+        elif val_str == "not set":
+            return f"{field_sql} IS NULL", []
+        return "", []
     return f"{field_sql} {operator} %s", [value]
 
 
@@ -892,7 +899,7 @@ def get_filtered_doctype_list(
 
     safe_fields = []
     for field in fields:
-        if field in {"name", "modified"} or meta.has_field(field):
+        if field in {"name", "modified", "creation"} or meta.has_field(field):
             safe_fields.append(field)
 
     if not safe_fields:
@@ -1080,4 +1087,121 @@ def get_asset_overview(asset):
             "issues": frappe.db.count("Asset Issue", {"asset": asset}),
             "assignments": frappe.db.count("Asset Assignment", {"asset": asset}),
         },
+    }
+
+from frappe.utils import add_days
+
+@frappe.whitelist()
+def get_actionable_notifications():
+    user = frappe.session.user
+    roles = frappe.get_roles(user)
+    
+    notifications = []
+    
+    is_infra = "Infra Admin" in roles or "Infra Executive" in roles or "System Manager" in roles or "Administrator" in roles
+    is_leadership = "Leadership" in roles or "System Manager" in roles or "Administrator" in roles
+    
+    if is_infra:
+        # 1. Nearing warranty expiry
+        expiring_assets = frappe.get_all(
+            "BYT Asset",
+            filters={
+                "status": ["!=", "Deregistered"],
+                "warranty_expiry_date": ["between", [today(), add_days(today(), 30)]]
+            },
+            fields=["name", "warranty_expiry_date"]
+        )
+        for asset in expiring_assets:
+            notifications.append({
+                "id": f"warranty-{asset.name}",
+                "type": "warranty",
+                "title": "Warranty Expiring Soon",
+                "message": f"Asset {asset.name} warranty expires on {asset.warranty_expiry_date}",
+                "link": f"/assets/{asset.name}"
+            })
+            
+        # 2. New Issues
+        # Assuming workflow_state or status indicates a pending issue. Let's use status == 'Open' or workflow_state == 'Pending'
+        # To be safe, we query docstatus == 0 (Draft) or status 'Open'
+        # Based on typical Frappe setup, we will just fetch recent open issues
+        open_issues = frappe.get_all(
+            "Asset Issue",
+            filters={"status": ["in", ["Open", "Pending", "New"]]},
+            fields=["name", "asset", "creation"],
+            limit_page_length=10,
+            order_by="creation desc"
+        )
+        for issue in open_issues:
+            notifications.append({
+                "id": f"issue-{issue.name}",
+                "type": "issue",
+                "title": "New Asset Issue",
+                "message": f"Issue {issue.name} reported for asset {issue.asset}",
+                "link": f"/asset/issues/{issue.name}"
+            })
+            
+    if is_leadership:
+        # 3. New Deregistration Requests
+        pending_dereg = frappe.get_all(
+            "Asset Deregistration",
+            filters={"status": ["in", ["Pending Approval", "Pending", "Open"]]},
+            fields=["name", "asset", "creation"],
+            limit_page_length=10,
+            order_by="creation desc"
+        )
+        for req in pending_dereg:
+            notifications.append({
+                "id": f"dereg-{req.name}",
+                "type": "deregistration",
+                "title": "New Deregistration Request",
+                "message": f"Deregistration {req.name} requested for asset {req.asset}",
+                "link": f"/asset/deregistration/{req.name}"
+            })
+            
+    return {"notifications": notifications}
+
+@frappe.whitelist()
+def get_reports_dashboard_data():
+    from frappe.utils import today, add_days
+    
+    # 1. Overdue Issues (High/Critical priority issues that are not closed)
+    overdue_issues = len(frappe.get_all("Asset Issue", filters={
+        "status": ["in", ["Open", "In Progress", "Pending", "New"]],
+        "priority": ["in", ["High", "Critical"]]
+    }, fields=["name"]))
+    
+    # 2. Unassigned Issues
+    unassigned_issues = len(frappe.get_all("Asset Issue", filters={
+        "status": ["in", ["Open", "In Progress", "Pending", "New"]],
+        "assigned_to": ["in", ["", None]]
+    }, fields=["name"]))
+    
+    # 3. Already Expired
+    already_expired = len(frappe.get_all("BYT Asset", filters=[
+        ["status", "!=", "Deregistered"],
+        ["warranty_expiry_date", "<", today()],
+        ["warranty_expiry_date", ">=","1970-01-01"],
+        
+    ], fields=["name"]))
+    
+    # 4. Expiring in 30 days
+    expiring_30 = len(frappe.get_all("BYT Asset", filters={
+        "status": ["!=", "Deregistered"],
+        "warranty_expiry_date": ["between", [today(), add_days(today(), 30)]]
+    }, fields=["name"]))
+    
+    # 5. Expiring in 60-90 days
+    expiring_60_90 = len(frappe.get_all("BYT Asset", filters={
+        "status": ["!=", "Deregistered"],
+        "warranty_expiry_date": ["between", [add_days(today(), 60), add_days(today(), 90)]]
+    }, fields=["name"]))
+    
+    return {
+        "kpis": {
+            "overdue_issues": overdue_issues,
+            "unassigned_issues": unassigned_issues,
+            "already_expired": already_expired,
+            "expiring_30_days": expiring_30,
+            "expiring_60_90_days": expiring_60_90
+        }
     }

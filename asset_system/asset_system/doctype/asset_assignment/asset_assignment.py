@@ -3,7 +3,7 @@ from frappe import _
 from frappe.model.document import Document
 
 from .helpers import is_assignment_active_status
-
+from asset_system.utils.asset_history_service import create_asset_history
 
 class AssetAssignment(Document):
     def validate(self):
@@ -38,7 +38,7 @@ class AssetAssignment(Document):
             frappe.throw(
                 _("Asset {0} is deregistered and cannot be assigned.").format(self.asset)
             )
-        if status in ("Assigned", "Maintenance", "In Use"):
+        if status in ("Assigned", "In Use"):
             frappe.throw(
                 _("Asset {0} is not available for assignment.").format(self.asset)
             )
@@ -81,6 +81,21 @@ class AssetAssignment(Document):
             asset_doc.status = "Assigned"
 
         asset_doc.save(ignore_permissions=True)
+        old_doc = self.get_doc_before_save()
+        create_asset_history(
+            asset=self.asset,
+            action_type="ASSIGNED",
+            reference_doctype="Asset Assignment",
+            reference_docname=self.name,
+            remarks=f"Assignment {self.name} was assigned to {self.assigned_to}",
+            changes=[
+                {
+                    "field_name": "Assigned To",
+                    "old_data": old_doc.assigned_to if old_doc else "",
+                    "new_data": self.assigned_to,
+                }
+            ],
+        )
         #frappe.db.set_value("BYT Asset", self.asset, {
         #    "assigned_to": self.assigned_to,
         #    "status": "In Use",
@@ -108,7 +123,7 @@ class AssetAssignment(Document):
         _unassign_asset() uses frappe.db.set_value which bypasses BYT Asset
         lifecycle hooks, so we create the history entry here explicitly.
         """
-        from asset_system.utils.asset_history_service import create_asset_history
+        
 
         create_asset_history(
             asset=self.asset,
