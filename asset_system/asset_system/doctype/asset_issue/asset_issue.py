@@ -122,7 +122,7 @@ class AssetIssue(Document):
 
         create_asset_history(
             asset=self.asset,
-            action_type="ISSUE RESOLVED",
+            action_type="ISSUE " + self.status.upper(),
             reference_doctype="Asset Issue",
             reference_docname=self.name,
             remarks=f"Issue moved to {new_status}.",

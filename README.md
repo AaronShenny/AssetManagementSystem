@@ -83,17 +83,33 @@ Primary endpoints:
 - `get_asset_history`
 - `return_asset`
 - `get_dashboard_stats`
+- `get_asset_overview`
 
 Additional utility endpoints in the same module:
 
 - `can_create_asset`
 - `can_create_assignment`
-- `get_Assetss`
-- `who_am_i`
 - `get_user_roles`
 - `get_asset_details`
 - `get_doctype_meta`
 - `search_link_options`
+- `get_filtered_doctype_list`
+- `get_unified_filter_catalog`
+- `check_permission`
+- `get_my_assets`
+- `get_actionable_notifications`
+- `get_reports_dashboard_data`
+- `is_proof_needed`
+
+### `get_asset_overview` enrichment behaviour
+
+`get_asset_overview(asset)` returns a combined summary payload for the 360° Asset Details page. The `recent_history` array is enriched server-side after fetching from the `Asset History` DocType:
+
+- For `ALLOCATED` records where `reference_doctype == "Asset Assignment"`: the `assigned_to` field is resolved from the linked `Asset Assignment` document and injected into the history entry.
+- For `DEALLOCATED` records where `reference_doctype == "Asset Return"`: the `employee` field (auto-fetched from `asset_assignment.assigned_to`) is resolved from the linked `Asset Return` document and injected as `assigned_to`.
+- For `DEALLOCATED` records where `reference_doctype == "Asset Assignment"` (fallback): `assigned_to` is resolved directly from the `Asset Assignment`.
+
+This ensures the frontend can always display **who the asset was allocated to or deallocated from**, independent of who performed the action (`changed_by`).
 
 ## Installation
 

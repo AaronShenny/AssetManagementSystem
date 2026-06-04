@@ -17,6 +17,7 @@
   "column_break_info",
   "location",
   "location_abbreviation",
+  "model",
   "section_break_purchase",
   "purchase_date",
   "purchase_value",
@@ -96,12 +97,14 @@
   {
    "fieldname": "purchase_date",
    "fieldtype": "Date",
-   "label": "Purchase Date"
+   "label": "Purchase Date",
+   "permlevel": 1
   },
   {
    "fieldname": "purchase_value",
    "fieldtype": "Currency",
-   "label": "Purchase Value"
+   "label": "Purchase Value",
+   "permlevel": 1
   },
   {
    "fieldname": "column_break_purchase",
@@ -147,29 +150,39 @@
    "fetch_from": "category.manager_approval_needed",
    "fieldname": "managers_approval_needed",
    "fieldtype": "Check",
+   "hidden": 1,
    "label": "Manager's Approval Needed?"
   },
   {
    "fieldname": "attachments",
    "fieldtype": "Table",
    "label": "Attachments",
-   "options": "Attachments"
+   "options": "Attachments",
+   "permlevel": 1
   },
   {
    "fieldname": "vendor",
    "fieldtype": "Link",
    "label": "Vendor",
-   "options": "Vendor"
+   "options": "Vendor",
+   "permlevel": 1
   },
   {
    "fieldname": "warranty_expiry_date",
    "fieldtype": "Date",
-   "label": "Warranty Expiry Date"
+   "label": "Warranty Expiry Date",
+   "permlevel": 1
+  },
+  {
+   "fieldname": "model",
+   "fieldtype": "Select",
+   "label": "Model",
+   "options": "Lenovo\nApple\nOther"
   }
  ],
  "icon": "fa fa-desktop",
  "links": [],
- "modified": "2026-06-04 11:20:23.943401",
+ "modified": "2026-06-04 18:49:04.933949",
  "modified_by": "Administrator",
  "module": "Asset System",
  "name": "BYT Asset",

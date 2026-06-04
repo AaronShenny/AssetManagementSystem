@@ -14,6 +14,7 @@ class AssetAssignment(Document):
 
     def after_insert(self):
         self._assign_asset()
+        self.create_history()
     def on_update(self):
         self._assign_asset()
 
@@ -70,6 +71,22 @@ class AssetAssignment(Document):
         if current_status not in ("Maintenance", "Deregistered"):
             update_values["status"] = "Available"
         frappe.db.set_value("BYT Asset", self.asset, update_values)
+    def create_history(self):
+        old_doc = self.get_doc_before_save()
+        create_asset_history(
+            asset=self.asset,
+            action_type="ALLOCATED",
+            reference_doctype="Asset Assignment",
+            reference_docname=self.name,
+            remarks=f"Assignment {self.name} was assigned to {self.assigned_to}",
+            changes=[
+                {
+                    "field_name": "Assigned To",
+                    "old_data": old_doc.assigned_to if old_doc else "",
+                    "new_data": self.assigned_to,
+                }
+            ],
+        )
     def _assign_asset(self):
         """Update Asset.assigned_to and keep status aligned with assignment activity."""
         asset_doc = frappe.get_doc("BYT Asset", self.asset)
@@ -82,20 +99,9 @@ class AssetAssignment(Document):
 
         asset_doc.save(ignore_permissions=True)
         old_doc = self.get_doc_before_save()
-        create_asset_history(
-            asset=self.asset,
-            action_type="ASSIGNED",
-            reference_doctype="Asset Assignment",
-            reference_docname=self.name,
-            remarks=f"Assignment {self.name} was assigned to {self.assigned_to}",
-            changes=[
-                {
-                    "field_name": "Assigned To",
-                    "old_data": old_doc.assigned_to if old_doc else "",
-                    "new_data": self.assigned_to,
-                }
-            ],
-        )
+        from asset_system.utils.asset_history_service import create_asset_history
+        
+        
         #frappe.db.set_value("BYT Asset", self.asset, {
         #    "assigned_to": self.assigned_to,
         #    "status": "In Use",

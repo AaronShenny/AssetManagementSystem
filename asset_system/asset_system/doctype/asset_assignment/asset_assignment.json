@@ -67,8 +67,7 @@
    "fieldname": "proof_file",
    "fieldtype": "Attach",
    "label": "Proof",
-   "mandatory_depends_on": "eval:doc.requires_manager_approval;",
-   "reqd": 1
+   "mandatory_depends_on": "eval:doc.requires_manager_approval;"
   },
   {
    "default": "Assigned",
@@ -89,12 +88,13 @@
    "fetch_from": "asset.managers_approval_needed",
    "fieldname": "requires_manager_approval",
    "fieldtype": "Check",
+   "hidden": 1,
    "label": "Manager's Approval Needed?"
   }
  ],
  "icon": "fa fa-user",
  "links": [],
- "modified": "2026-06-04 10:56:43.011649",
+ "modified": "2026-06-04 18:05:10.517905",
  "modified_by": "Administrator",
  "module": "Asset System",
  "name": "Asset Assignment",

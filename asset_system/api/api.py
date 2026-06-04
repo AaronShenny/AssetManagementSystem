@@ -644,30 +644,99 @@ def _build_condition(field_sql: str, operator: str, value) -> Tuple[str, List]:
     return f"{field_sql} {operator} %s", [value]
 
 
+import frappe
+from frappe import _
+
+
+
+
+
 @frappe.whitelist()
 def get_doctype_meta(doctype: str):
+    print("\n" + "=" * 80)
+    print("GET_DOCTYPE_META DEBUG")
+    print("=" * 80)
+    print("DOCTYPE:", doctype)
+    print("USER:", frappe.session.user)
+    print("ROLES:", frappe.get_roles())
+
     if not doctype:
         frappe.throw(_("doctype is required"))
+
+    
+
     meta = frappe.get_meta(doctype)
-    
-    
-    return {
-        "fields": [
+
+    allowed_read_levels = set()
+    allowed_write_levels = set()
+
+    print("\n--- META PERMISSIONS ---")
+    for p in meta.permissions:
+        print(
+            {
+                "role": p.role,
+                "permlevel": p.permlevel,
+                "read": p.read,
+                "write": p.write,
+                "create": p.create,
+            }
+        )
+
+        if p.role in frappe.get_roles():
+            if p.read:
+                allowed_read_levels.add(int(p.permlevel or 0))
+            if p.write:
+                allowed_write_levels.add(int(p.permlevel or 0))
+
+    print("\n--- ALLOWED LEVELS ---")
+    print("READ LEVELS:", allowed_read_levels)
+    print("WRITE LEVELS:", allowed_write_levels)
+
+    fields = []
+
+    print("\n--- FIELD ANALYSIS ---")
+    for f in meta.fields:
+        field_permlevel = int(f.permlevel or 0)
+
+        status = "ALLOWED" if field_permlevel in allowed_read_levels else "FILTERED"
+
+        print(
+            {
+                "fieldname": f.fieldname,
+                "label": f.label,
+                "permlevel": field_permlevel,
+                "hidden": f.hidden,
+                "read_only": f.read_only,
+                "status": status,
+            }
+        )
+
+        if field_permlevel not in allowed_read_levels:
+            continue
+
+        fields.append(
             {
                 "fieldname": f.fieldname,
                 "label": f.label,
                 "fieldtype": f.fieldtype,
                 "hidden": f.hidden,
-                "read_only": f.read_only,
                 "reqd": f.reqd,
                 "options": f.options,
                 "in_list_view": f.in_list_view,
                 "default": f.default,
+                "permlevel": field_permlevel,
+                "read_only": bool(f.read_only) or field_permlevel not in allowed_write_levels,
             }
-            for f in meta.fields
-        ]
-}
+        )
 
+    print("\n--- RETURNED FIELDS ---")
+    for f in fields:
+        print(f.get("fieldname"), "permlevel=", f.get("permlevel"))
+
+    print("TOTAL RETURNED:", len(fields))
+    print("=" * 80 + "\n")
+
+    return {"fields": fields}
 
 @frappe.whitelist()
 def get_unified_filter_catalog(doctype: str = "BYT Asset"):
@@ -1021,6 +1090,20 @@ def get_asset_overview(asset):
     """
     Returns a summary view for the asset details page.
     """
+    roles = frappe.get_roles()
+    print(roles)
+    if roles == ['Employee', 'All', 'Guest', 'Desk User']:
+        return {
+        "asset": asset_doc,
+        "recent_history": [],
+        "recent_issues": [],
+        "recent_assignments": [],
+        "counts": {
+            "history": 0,
+            "issues": 0,
+            "assignments": 0,
+        },
+    }
     if not asset:
         frappe.throw(_("asset is required"))
 
@@ -1042,6 +1125,27 @@ def get_asset_overview(asset):
         ],
         order_by="changed_on desc",
     )
+
+    for history in recent_history:
+        status = history.get("status")
+        ref_dt = history.get("reference_doctype")
+        ref_dn = history.get("reference_docname")
+
+        if status == "ALLOCATED" and ref_dt == "Asset Assignment" and ref_dn:
+            assigned_to = frappe.db.get_value("Asset Assignment", ref_dn, "assigned_to")
+            if assigned_to:
+                history["assigned_to"] = assigned_to
+
+        elif status == "DEALLOCATED" and ref_dn:
+            if ref_dt == "Asset Return":
+                # Asset Return has an `employee` field fetched from the linked assignment
+                employee = frappe.db.get_value("Asset Return", ref_dn, "employee")
+                if employee:
+                    history["assigned_to"] = employee
+            elif ref_dt == "Asset Assignment":
+                assigned_to = frappe.db.get_value("Asset Assignment", ref_dn, "assigned_to")
+                if assigned_to:
+                    history["assigned_to"] = assigned_to
 
     recent_issues = get_doctype_filter(
         doctype="Asset Issue",
@@ -1074,7 +1178,7 @@ def get_asset_overview(asset):
             "status",
             "is_active",
         ],
-        order_by="assigned_date desc",
+        order_by="creation desc",
     )
 
     return {
@@ -1203,5 +1307,14 @@ def get_reports_dashboard_data():
             "already_expired": already_expired,
             "expiring_30_days": expiring_30,
             "expiring_60_90_days": expiring_60_90
-        }
+        } 
     }
+
+
+@frappe.whitelist()
+def is_proof_needed(category):
+    try:
+        doc = frappe.get_doc("Asset Category",category)
+        return doc.manager_approval_needed
+    except Exception as e:
+        pass
