@@ -145,8 +145,10 @@ http://localhost:5173
    5. Redirect URL : /api/method/frappe.integrations.oauth2_logins.login_via_office365
    6. Access Token URL : https://login.microsoftonline.com/fc44c070-fb0f-4e32-b713-14422945e334/oauth2/v2.0/token
    7. Auth URL data :  {"response_type": "code", "scope": "openid profile email User.Read"}
-7. After creating social login key [ name : microsoft], go to this \\wsl.localhost\Ubuntu\home\aaron\BYT\frappe-benchv16\apps\frappe\frappe\integrations\oauth2_logins.py 
-   Change function login_via_office365():
-   @frappe.whitelist(allow_guest=True)
-   def login_via_office365(code: str, state: str):
-    	login_via_oauth2_id_token("microsoft", code, state, decoder=decoder_compat)
+7. After creating social login key [ name : microsoft], go to this \\wsl.localhost\Ubuntu\home\aaron\BYT\frappe-benchv16\apps\frappe\frappe\integrations\oauth2_logins.py
+   1. Change function login_via_office365():
+      ```python
+      @frappe.whitelist(allow_guest=True)
+      def login_via_office365(code: str, state: str):
+          login_via_oauth2_id_token("microsoft", code, state, decoder=decoder_compat)
+      ```
