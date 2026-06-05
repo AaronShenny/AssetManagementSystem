@@ -84,3 +84,43 @@ http://localhost:8000
 
 ## Employee
 <img width="1919" height="960" alt="image" src="https://github.com/user-attachments/assets/b30e532d-32e2-4b86-ace6-a6a579800a3e" />
+
+
+
+# Clone Frontend Repository
+
+```bash
+git clone https://github.com/AaronShenny/ReactERP.git
+cd ReactERP
+```
+
+## Install Dependencies
+
+```bash
+npm install
+```
+
+## Configure Environment Variables
+
+Create a `.env` file and configure the backend URL as required.
+
+Example:
+
+```env
+VITE_API_URL=http://localhost:8000
+```
+
+## Start Development Server
+
+```bash
+npm run dev
+```
+
+The application will be available at:
+
+```text
+http://localhost:5173
+```
+
+
+
