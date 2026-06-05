@@ -129,5 +129,24 @@ http://localhost:5173
 # AD WORKFLOW 2 | Asset Issues
 <img width="1252" height="948" alt="image" src="https://github.com/user-attachments/assets/26901ee4-a09f-4e43-abb2-70a92da01760" />
 
-
-
+## Steps
+1. Create [Employee, Infra Admin, Infra Executive, Leadership] Roles in Frappe.
+2. Give permissions for each role as per the above images
+3. When We create a user, a default employee role would be placed [ user_hooks.py ]
+4. Change the login redirect. In the zip file, it would directly goes to frappe's login. But in production, it should directly redirect to microsoft login [ src/pages/login.jsx]
+    window.location.href = `https://login.microsoftonline.com/fc44c070-fb0f-4e32-b713-14422945e334/oauth2/v2.0/authorize?redirect_uri=${API_BASE}%2Fapi%2Fmethod%2Ffrappe.integrations.oauth2_logins.login_via_office365&state=eyJzaXRlIjogImh0dHA6Ly9sb2NhbGhvc3Q6ODA4MCIsICJ0b2tlbiI6ICI5MmZhMGEyZjQ1ZTkwNGM0NmY4ZjJlNWMyZTE2MjliZDg1N2RiMTg1MTE2MzhiYjlkMzUzYzc5MyIsICJyZWRpcmVjdF90byI6ICJodHRwOi8vbG9jYWxob3N0OjgwODAvYXBpL21ldGhvZC9mcmFwcGUuaW50ZWdyYXRpb25zLm9hdXRoMi5hdXRob3JpemU%2FY2xpZW50X2lkPXFjcmRzcDg0N20mcmVzcG9uc2VfdHlwZT10b2tlbiZyZWRpcmVjdF91cmk9aHR0cDovL2xvY2FsaG9zdDo1MTczL2F1dGgvY2FsbGJhY2sifQ%3D%3D&response_type=code&scope=openid+profile+email+User.Read&client_id=1624909b-d52e-42c7-a634-b1cd2a426a79`;
+5. Change the client secret in React respo and Add oAuth client in frappe
+   <img width="1919" height="855" alt="image" src="https://github.com/user-attachments/assets/af654a6d-8ba4-4f3a-97c4-6f71c64df26d" />
+6. In social Login key [Custom, dont use office365]
+   1. Client id : 1624909b-d52e-42c7-a634-b1cd2a426a79
+   2. Client Secret : 
+   3. Base URL : https://login.microsoftonline.com
+   4. Authorize URL: https://login.microsoftonline.com/fc44c070-fb0f-4e32-b713-14422945e334/oauth2/v2.0/authorize
+   5. Redirect URL : /api/method/frappe.integrations.oauth2_logins.login_via_office365
+   6. Access Token URL : https://login.microsoftonline.com/fc44c070-fb0f-4e32-b713-14422945e334/oauth2/v2.0/token
+   7. Auth URL data :  {"response_type": "code", "scope": "openid profile email User.Read"}
+7. After creating social login key [ name : microsoft], go to this \\wsl.localhost\Ubuntu\home\aaron\BYT\frappe-benchv16\apps\frappe\frappe\integrations\oauth2_logins.py 
+   Change function login_via_office365():
+   @frappe.whitelist(allow_guest=True)
+   def login_via_office365(code: str, state: str):
+    	login_via_oauth2_id_token("microsoft", code, state, decoder=decoder_compat)
