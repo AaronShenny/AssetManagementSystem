@@ -123,4 +123,11 @@ http://localhost:5173
 ```
 
 
+# AD WORKFLOW2 |Asset Deregistration
+<img width="833" height="696" alt="image" src="https://github.com/user-attachments/assets/d4f8f40e-39b0-4613-82f8-aafb52054239" />
+
+# AD WORKFLOW 2 | Asset Issues
+<img width="1252" height="948" alt="image" src="https://github.com/user-attachments/assets/26901ee4-a09f-4e43-abb2-70a92da01760" />
+
+
 
