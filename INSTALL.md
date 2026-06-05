@@ -48,7 +48,7 @@ Provide the requested PostgreSQL credentials when prompted:
 
 ```bash
 bench get-app https://github.com/AaronShenny/AssetManagementSystem.git
-bench --site byt.local install-app asset_management_system
+bench --site byt.local install-app asset_system
 ```
 
 ## Run Migrations
