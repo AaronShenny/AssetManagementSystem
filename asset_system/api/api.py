@@ -550,30 +550,7 @@ def get_asset_details(asset):
         "fields": fields_data
     }
 
-@frappe.whitelist()
-def get_doctype_meta(doctype: str):
-    if not doctype:
-        frappe.throw(_('doctype is required'))
 
-    meta = frappe.get_meta(doctype)
-
-    fields = []
-    for field in meta.fields:
-        fields.append(
-            {
-                "fieldname": field.fieldname,
-                "label": field.label,
-                "fieldtype": field.fieldtype,
-                "hidden": field.hidden,
-                "read_only": field.read_only,
-                "reqd": field.reqd,
-                "options": field.options,
-                "in_list_view": field.in_list_view,
-                "default": field.default,
-            }
-        )
-
-    return {"fields": fields}
 
 @frappe.whitelist()
 def search_link_options(doctype, txt=""):
@@ -653,67 +630,34 @@ from frappe import _
 
 @frappe.whitelist()
 def get_doctype_meta(doctype: str):
-    print("\n" + "=" * 80)
-    print("GET_DOCTYPE_META DEBUG")
-    print("=" * 80)
-    print("DOCTYPE:", doctype)
-    print("USER:", frappe.session.user)
-    print("ROLES:", frappe.get_roles())
-
     if not doctype:
         frappe.throw(_("doctype is required"))
-
-    
-
     meta = frappe.get_meta(doctype)
-
+    # Child doctypes (istable=1) have no permissions of their own —
+    # they inherit permissions from the parent doctype.
+    # In that case, skip permlevel filtering entirely and return all fields.
+    is_child_table = bool(getattr(meta, "istable", 0))
     allowed_read_levels = set()
     allowed_write_levels = set()
-
-    print("\n--- META PERMISSIONS ---")
-    for p in meta.permissions:
-        print(
-            {
-                "role": p.role,
-                "permlevel": p.permlevel,
-                "read": p.read,
-                "write": p.write,
-                "create": p.create,
-            }
-        )
-
-        if p.role in frappe.get_roles():
-            if p.read:
-                allowed_read_levels.add(int(p.permlevel or 0))
-            if p.write:
-                allowed_write_levels.add(int(p.permlevel or 0))
-
-    print("\n--- ALLOWED LEVELS ---")
-    print("READ LEVELS:", allowed_read_levels)
-    print("WRITE LEVELS:", allowed_write_levels)
-
+    if not is_child_table:
+        for p in meta.permissions:
+            if p.role in frappe.get_roles():
+                if p.read:
+                    allowed_read_levels.add(int(p.permlevel or 0))
+                if p.write:
+                    allowed_write_levels.add(int(p.permlevel or 0))
+        # If no explicit permissions found at all, default to allowing permlevel 0
+        if not allowed_read_levels:
+            allowed_read_levels.add(0)
+        if not allowed_write_levels:
+            allowed_write_levels.add(0)
     fields = []
-
-    print("\n--- FIELD ANALYSIS ---")
     for f in meta.fields:
         field_permlevel = int(f.permlevel or 0)
-
-        status = "ALLOWED" if field_permlevel in allowed_read_levels else "FILTERED"
-
-        print(
-            {
-                "fieldname": f.fieldname,
-                "label": f.label,
-                "permlevel": field_permlevel,
-                "hidden": f.hidden,
-                "read_only": f.read_only,
-                "status": status,
-            }
-        )
-
-        if field_permlevel not in allowed_read_levels:
+        # For child tables: include all fields (no permlevel check)
+        # For parent doctypes: check against allowed read levels
+        if not is_child_table and field_permlevel not in allowed_read_levels:
             continue
-
         fields.append(
             {
                 "fieldname": f.fieldname,
@@ -725,17 +669,11 @@ def get_doctype_meta(doctype: str):
                 "in_list_view": f.in_list_view,
                 "default": f.default,
                 "permlevel": field_permlevel,
-                "read_only": bool(f.read_only) or field_permlevel not in allowed_write_levels,
+                "read_only": bool(f.read_only) if is_child_table else (
+                    bool(f.read_only) or field_permlevel not in allowed_write_levels
+                ),
             }
         )
-
-    print("\n--- RETURNED FIELDS ---")
-    for f in fields:
-        print(f.get("fieldname"), "permlevel=", f.get("permlevel"))
-
-    print("TOTAL RETURNED:", len(fields))
-    print("=" * 80 + "\n")
-
     return {"fields": fields}
 
 @frappe.whitelist()

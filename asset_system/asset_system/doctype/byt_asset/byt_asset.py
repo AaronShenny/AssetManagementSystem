@@ -49,11 +49,16 @@ class BYTAsset(Document):
     def validate(self):
         self._validate_status_transition()
         self._validate_assignment_status()
+        self._warranty_date_check()
+        
 
     # ------------------------------------------------------------------ #
     # Private helpers                                                      #
     # ------------------------------------------------------------------ #
-
+    def _warranty_date_check(self):
+        if self.warranty_expiry_date < self.purchase_date:
+            frappe.throw(
+                _("Warrenty date should not be less than Purchase date"))
     def _validate_status_transition(self):
         """Enforce allowed lifecycle transitions when status changes."""
         if self.is_new():
